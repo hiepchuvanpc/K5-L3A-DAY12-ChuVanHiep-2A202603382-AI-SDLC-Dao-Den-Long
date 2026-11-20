@@ -21,7 +21,8 @@ test('Player picks up mote within pickup_radius', () => {
   assert.equal(events.length, 1);
   assert.equal(events[0].name, 'mote_picked');
   assert.equal(events[0].data.carried, 1);
-  assert.equal(engine.score, 10);
+  // Contract v1.2 rule: motes score +5 when deposited to lanterns, not upon pickup
+  assert.equal(engine.score, 0);
 });
 
 test('Deposit motes and light lantern when lantern_cost reached', () => {
@@ -91,8 +92,10 @@ test('Shade attacks player, player loses 1 flame and drops motes', () => {
   assert.equal(engine.player.flames, 2);
 });
 
-test('Win game when all 5 lanterns are lit', () => {
+test('Contract v1.2: No early win when all lanterns lit; win at dawn with >= 60% lit lanterns', () => {
   const scenario = {
+    // 1 tick left before dawn (1/60s = 0.01667s)
+    time_left_s: 1 / 60,
     player: { pos: [0, 0, 24.5], carried: 10, flames: 3 },
     random_motes: false,
     random_shades: false,
@@ -100,21 +103,23 @@ test('Win game when all 5 lanterns are lit', () => {
     shades: [],
     lanterns: [
       { id: 'L1', pos: [0, 0, 25.0], deposited: 0, lit: false },
-      { id: 'L2', lit: true },
-      { id: 'L3', lit: true },
-      { id: 'L4', lit: true },
-      { id: 'L5', lit: true }
+      { id: 'L2', lit: true, fuel: 100 },
+      { id: 'L3', lit: true, fuel: 100 },
+      { id: 'L4', lit: true, fuel: 100 },
+      { id: 'L5', lit: true, fuel: 100 }
     ]
   };
 
   const engine = new GameEngine({ seed: 42, scenario });
   const events = engine.step({ interact: true });
 
+  // In Contract v1.2, lighting all lanterns does not win early, but at dawn (1 tick later),
+  // player survives with 5/5 lit lanterns (>= 60%), winning with dawn_survived!
   assert.equal(engine.state, 'won');
   const winEvent = events.find((e) => e.name === 'game_over');
   assert.ok(winEvent);
   assert.equal(winEvent.data.result, 'won');
-  assert.equal(winEvent.data.reason, 'all_lit');
+  assert.equal(winEvent.data.reason, 'dawn_survived');
 });
 
 test('Determinism: same seed and inputs produce identical state', () => {

@@ -4,7 +4,7 @@ export const MAPS = {
   1: {
     night: 1,
     name: 'Đảo Bến',
-    duration_s: 300,
+    duration_s: 240,
     spawn: [0.0, 0.0, 0.0],
     facing_dir: [0.0, 1.0], // facing +Z
     island_radius: 40.0,
@@ -54,7 +54,7 @@ export const MAPS = {
   2: {
     night: 2,
     name: 'Đảo Cau',
-    duration_s: 330,
+    duration_s: 270,
     spawn: [0.0, 0.0, 0.0],
     facing_dir: [0.0, 1.0],
     lanterns: [
@@ -136,7 +136,7 @@ export const MAPS = {
   3: {
     night: 3,
     name: 'Đảo Chuông',
-    duration_s: 360,
+    duration_s: 300,
     spawn: [0.0, 0.0, 0.0],
     facing_dir: [0.0, 1.0],
     lanterns: [

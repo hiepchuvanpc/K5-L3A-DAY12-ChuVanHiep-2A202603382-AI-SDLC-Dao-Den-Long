@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Đảo Đèn Lồng — 3D Fairytale Action (Phase 2: Ba Hòn Đảo)</title>
+  <title>Đảo Đèn Lồng — 3D Fairytale Action (Phase 3: Đèn Cạn Dầu)</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
     body, html { width: 100%; height: 100%; overflow: hidden; background: #0E1430; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #F5F1E6; }
-    #canvas-container { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
+    #canvas-container { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; cursor: crosshair; }
 
     /* HUD overlay */
     #hud {
@@ -75,6 +75,11 @@
       border-color: #FF5A5F;
       animation: pulseBlink 0.8s infinite;
     }
+    .colorblind-active .timer-badge.danger {
+      color: #FFFFFF !important;
+      border-color: #FFFFFF !important;
+    }
+
     @keyframes pulseBlink {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.5; transform: scale(1.05); }
@@ -111,7 +116,7 @@
       transform: scale(0.8);
     }
 
-    /* 10-slot mote bar */
+    /* Dynamic Mote bar (10 to 20 slots) */
     .bottom-center {
       display: flex;
       flex-direction: column;
@@ -127,8 +132,11 @@
       padding: 8px 16px;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      max-width: 450px;
+      flex-wrap: wrap;
+      justify-content: center;
     }
     .mote-slot {
       width: 14px;
@@ -157,6 +165,14 @@
       transition: opacity 0.3s;
     }
     .prompt-banner.visible { opacity: 1; }
+    .prompt-banner.danger {
+      border-color: #FF5A5F;
+      color: #FF5A5F;
+    }
+    .colorblind-active .prompt-banner.danger {
+      border-color: #FFFFFF !important;
+      color: #FFFFFF !important;
+    }
 
     .bottom-bar {
       display: flex;
@@ -297,12 +313,15 @@
       </div>
 
       <div class="top-center">
-        <div class="night-selector">
-          <button class="btn-night-tab active" data-night="1">🌙 Đêm 1</button>
-          <button class="btn-night-tab" data-night="2">🌙 Đêm 2</button>
-          <button class="btn-night-tab" data-night="3">🌙 Đêm 3</button>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <div class="night-selector">
+            <button class="btn-night-tab active" data-night="1">🌙 Đêm 1</button>
+            <button class="btn-night-tab" data-night="2">🌙 Đêm 2</button>
+            <button class="btn-night-tab" data-night="3">🌙 Đêm 3</button>
+          </div>
+          <button class="btn-night-tab" id="btn-colorblind" style="background: rgba(14, 20, 48, 0.9); border: 1px solid rgba(242, 193, 78, 0.4); border-radius: 20px; pointer-events: auto;">👁 Bảng màu: Chuẩn</button>
         </div>
-        <div class="timer-badge" id="timer-badge" style="margin-top: 6px;">05:00</div>
+        <div class="timer-badge" id="timer-badge" style="margin-top: 6px;">04:00</div>
       </div>
 
       <div class="stat-card hud-metrics">
@@ -315,8 +334,12 @@
           </div>
         </div>
         <div class="metric">
-          <span class="metric-label">Đèn Lớn</span>
+          <span class="metric-label">Đèn Đang Sáng</span>
           <span class="metric-value accent" id="lanterns-lit">0 / 5</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Sức Chứa</span>
+          <span class="metric-value accent" id="capacity-val">0 / 10</span>
         </div>
         <div class="metric">
           <span class="metric-label">Điểm</span>
@@ -328,8 +351,7 @@
     <div class="bottom-center">
       <div class="prompt-banner" id="prompt-banner">E — Nạp ánh sáng (0/10)</div>
       <div class="mote-bar-container" id="mote-bar">
-        <div class="mote-slot"></div><div class="mote-slot"></div><div class="mote-slot"></div><div class="mote-slot"></div><div class="mote-slot"></div>
-        <div class="mote-slot"></div><div class="mote-slot"></div><div class="mote-slot"></div><div class="mote-slot"></div><div class="mote-slot"></div>
+        <!-- Dynamically rendered mote slots -->
       </div>
     </div>
 
@@ -338,9 +360,10 @@
         <div><span class="key-badge">W A S D</span> Di chuyển</div>
         <div><span class="key-badge">Shift</span> Lướt</div>
         <div><span class="key-badge">Space</span> Nhảy</div>
-        <div><span class="key-badge">E</span> Thắp đèn</div>
+        <div><span class="key-badge">E</span> Thắp / Châm dầu</div>
         <div><span class="key-badge">Q</span> Tỏa sáng</div>
-        <div><span class="key-badge">P</span> hoặc <span class="key-badge">Esc</span> Tạm dừng</div>
+        <div><span class="key-badge">Chuột</span> Xoay (khóa tự do)</div>
+        <div><span class="key-badge">P / Esc</span> Dừng</div>
       </div>
 
       <div class="skill-icons">
@@ -377,7 +400,7 @@
   <!-- Game Over / Victory Modal -->
   <div class="modal-screen" id="result-screen">
     <h2 class="modal-title" id="result-title">CHIẾN THẮNG!</h2>
-    <p class="modal-desc" id="result-desc">Mây đã thắp sáng toàn bộ ngọn đèn!</p>
+    <p class="modal-desc" id="result-desc">Mây đã giữ vững đảo sáng tới bình minh!</p>
     <div style="font-size: 20px; color: #F2C14E; margin-bottom: 20px;">Tổng điểm: <span id="final-score">0</span></div>
     <div style="margin-bottom: 18px;">
       <button class="btn-action" id="btn-retry">🔄 Chơi lại Đêm này</button>
@@ -392,7 +415,7 @@
   </div>
 
   <script>
-    // Web Audio Synthesizer (No external asset dependency)
+    // Web Audio Synthesizer
     const AudioSys = {
       ctx: null,
       init() {
@@ -453,11 +476,12 @@
     window.addEventListener('click', () => AudioSys.init(), { once: true });
     window.addEventListener('keydown', () => AudioSys.init(), { once: true });
 
-    // Standard Map Definitions
+    // Standard Map Definitions (Phase 3 durations: 240s, 270s, 300s)
     const MAPS_DATA = {
       1: {
         name: 'Đảo Bến',
-        duration_s: 300,
+        duration_s: 240,
+        winRequired: 3,
         lanterns: [
           { id: 'L1', pos: [0.0, 0.0, 25.0] },
           { id: 'L2', pos: [23.8, 0.0, 7.7] },
@@ -473,7 +497,8 @@
       },
       2: {
         name: 'Đảo Cau',
-        duration_s: 330,
+        duration_s: 270,
+        winRequired: 4,
         lanterns: [
           { id: 'L1', pos: [0.0, 0.0, 20.0] },
           { id: 'L2', pos: [17.0, 0.0, -10.0] },
@@ -496,7 +521,8 @@
       },
       3: {
         name: 'Đảo Chuông',
-        duration_s: 360,
+        duration_s: 300,
+        winRequired: 5,
         lanterns: [
           { id: 'L1', pos: [0.0, 6.0, 6.0] },
           { id: 'L2', pos: [18.0, 3.0, 10.0] },
@@ -533,19 +559,50 @@
       }
     };
 
+    // Colorblind Mode
+    let colorblindMode = localStorage.getItem('colorblind_mode') === '1';
+    function applyColorblindSettings() {
+      document.body.classList.toggle('colorblind-active', colorblindMode);
+      const btn = document.getElementById('btn-colorblind');
+      if (btn) btn.innerText = colorblindMode ? '👁 Bảng màu: Dễ phân biệt ⚠' : '👁 Bảng màu: Chuẩn';
+      
+      // Update Shade colors in scene
+      gameState.shades.forEach(s => {
+        if (s.aura && s.body) {
+          if (colorblindMode) {
+            s.aura.color.setHex(0x00B3FF);
+            s.body.material.emissive.setHex(0x0088CC);
+            if (s.eyes) s.eyes.forEach(e => e.material.color.setHex(0x00B3FF));
+          } else {
+            s.aura.color.setHex(0xA855F7);
+            s.body.material.emissive.setHex(0x7A3CFF);
+            if (s.eyes) s.eyes.forEach(e => e.material.color.setHex(0xF43F5E));
+          }
+        }
+      });
+    }
+
+    document.getElementById('btn-colorblind').addEventListener('click', () => {
+      colorblindMode = !colorblindMode;
+      localStorage.setItem('colorblind_mode', colorblindMode ? '1' : '0');
+      applyColorblindSettings();
+    });
+
     // Client Game State
     let currentNight = 1;
     let isPaused = false;
     let gameState = {
       state: 'playing',
       score: 0,
-      timeLeft: 300,
+      timeLeft: 240,
       player: {
         pos: [0, 0, 0],
         vel: [0, 0, 0],
         grounded: true,
         flames: 3,
         carried: 0,
+        capacity: 10,
+        successfulLights: 0,
         invulnTimer: 0,
         dashCd: 0,
         dashTimer: 0,
@@ -556,77 +613,95 @@
         respawnWait: 0
       },
       lanterns: [],
-      motes: [],
       shades: [],
+      motes: [],
       drifters: [],
       charms: []
     };
 
-    // Three.js Scene Setup (Atmospheric Dark Night)
+    // Three.js Scene Setup
     const container = document.getElementById('canvas-container');
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x070B18);
-    scene.fog = new THREE.FogExp2(0x0A0F22, 0.015);
+    scene.fog = new THREE.FogExp2(0x0B0F28, 0.015);
 
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x0B0F28, 1);
     renderer.shadowMap.enabled = true;
     container.appendChild(renderer.domElement);
 
-    const ambientLight = new THREE.AmbientLight(0x7D92B8, 0.22);
+    // Pointer Lock & Camera rotation
+    let isPointerLocked = false;
+    let camYaw = 0;
+    let lastMouseX = null;
+
+    container.addEventListener('click', () => {
+      if (gameState.state === 'playing' && !isPaused) {
+        container.requestPointerLock();
+      }
+    });
+
+    document.addEventListener('pointerlockchange', () => {
+      isPointerLocked = (document.pointerLockElement === container);
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (isPointerLocked) {
+        camYaw -= e.movementX * 0.002;
+      } else if (lastMouseX !== null) {
+        const deltaX = e.clientX - lastMouseX;
+        camYaw -= deltaX * 0.0025;
+      }
+      lastMouseX = e.clientX;
+    });
+    window.addEventListener('mouseleave', () => { lastMouseX = null; });
+
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0x283B68, 0.22);
     scene.add(ambientLight);
 
-    const hemiLight = new THREE.HemisphereLight(0x3B4A68, 0x0E1420, 0.20);
-    scene.add(hemiLight);
-
-    const moonLight = new THREE.DirectionalLight(0x9AB8E6, 0.70);
-    moonLight.position.set(45, 80, 35);
-    moonLight.castShadow = true;
+    const moonLight = new THREE.DirectionalLight(0xA8C2FF, 0.70);
+    moonLight.position.set(40, 70, -30);
     scene.add(moonLight);
 
-    // Mây Character
+    // Mây (Player Character 3D Model)
     const mayGroup = new THREE.Group();
-    // Tunic (E8E2D0)
-    const bodyGeo = new THREE.CylinderGeometry(0.35, 0.45, 1.1, 16);
-    const bodyMat = new THREE.MeshStandardMaterial({ color: 0xE8E2D0 });
-    const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
-    bodyMesh.position.y = 0.65;
-    mayGroup.add(bodyMesh);
-
-    // Scarf (C8102E)
-    const scarfGeo = new THREE.TorusGeometry(0.38, 0.08, 8, 16);
-    const scarfMat = new THREE.MeshStandardMaterial({ color: 0xC8102E });
-    const scarfMesh = new THREE.Mesh(scarfGeo, scarfMat);
-    scarfMesh.rotation.x = Math.PI / 2;
-    scarfMesh.position.y = 1.15;
-    mayGroup.add(scarfMesh);
-
-    // Head
-    const headGeo = new THREE.SphereGeometry(0.28, 16, 16);
-    const headMat = new THREE.MeshStandardMaterial({ color: 0xFFE58A });
-    const headMesh = new THREE.Mesh(headGeo, headMat);
-    headMesh.position.y = 1.35;
-    mayGroup.add(headMesh);
-
-    // Nón lá (C9B48A)
-    const hatGeo = new THREE.ConeGeometry(0.85, 0.45, 32);
-    const hatMat = new THREE.MeshStandardMaterial({ color: 0xC9B48A, roughness: 0.9 });
-    const hatMesh = new THREE.Mesh(hatGeo, hatMat);
-    hatMesh.position.y = 1.6;
-    mayGroup.add(hatMesh);
-
-    // Hanging Mini Lantern (FFB347)
-    const miniLantern = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.16, 0.12), new THREE.MeshBasicMaterial({ color: 0xFFB347 }));
-    miniLantern.position.set(0.45, 1.3, 0);
-    mayGroup.add(miniLantern);
-
-    const miniLight = new THREE.PointLight(0xFFA500, 2.5, 9);
-    miniLight.position.set(0.45, 1.3, 0);
-    mayGroup.add(miniLight);
     scene.add(mayGroup);
 
-    // Pulse effect mesh
+    const mayBody = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.35, 0.42, 1.1, 16),
+      new THREE.MeshStandardMaterial({ color: 0x3A6073, roughness: 0.6 })
+    );
+    mayBody.position.y = 0.55;
+    mayGroup.add(mayBody);
+
+    const mayHead = new THREE.Mesh(
+      new THREE.SphereGeometry(0.28, 16, 16),
+      new THREE.MeshStandardMaterial({ color: 0xFAD0C4 })
+    );
+    mayHead.position.y = 1.25;
+    mayGroup.add(mayHead);
+
+    const hat = new THREE.Mesh(
+      new THREE.ConeGeometry(0.72, 0.45, 24),
+      new THREE.MeshStandardMaterial({ color: 0xD4A373, roughness: 0.7 })
+    );
+    hat.position.y = 1.48;
+    hat.rotation.y = Math.PI / 4;
+    mayGroup.add(hat);
+
+    const mayLantern = new THREE.Mesh(
+      new THREE.SphereGeometry(0.12, 12, 12),
+      new THREE.MeshStandardMaterial({ color: 0xFFFBE6, emissive: 0xF2C14E, emissiveIntensity: 1.2 })
+    );
+    mayLantern.position.set(0.48, 1.28, 0.15);
+    mayGroup.add(mayLantern);
+
+    const mayLight = new THREE.PointLight(0xF2C14E, 1.5, 7.5);
+    mayLight.position.set(0.48, 1.28, 0.15);
+    mayGroup.add(mayLight);
+
     const pulseMesh = new THREE.Mesh(
       new THREE.SphereGeometry(5.0, 32, 16),
       new THREE.MeshBasicMaterial({ color: 0xF2C14E, wireframe: true, transparent: true, opacity: 0 })
@@ -684,14 +759,19 @@
         t0.position.set(0, -2, 0);
         envGroup.add(t0);
 
-        // Tier 1 (Y=3) crescent terrace for z > 0
-        const t1 = new THREE.Mesh(new THREE.CylinderGeometry(24, 24, 3, 32), new THREE.MeshStandardMaterial({ color: 0x2F5D50 }));
-        t1.position.set(0, 1.5, 12);
+        // Tier 1 (Y=3) crescent terrace for z > 0 (Half-Ring from r=12 to r=24)
+        const shape = new THREE.Shape();
+        shape.absarc(0, 0, 24, 0, Math.PI, false);
+        shape.absarc(0, 0, 12, Math.PI, 0, true);
+        const extrudeGeom = new THREE.ExtrudeGeometry(shape, { depth: 3, bevelEnabled: false });
+        const t1 = new THREE.Mesh(extrudeGeom, new THREE.MeshStandardMaterial({ color: 0x2F5D50 }));
+        t1.rotation.x = -Math.PI / 2;
+        t1.position.set(0, 3, 0);
         envGroup.add(t1);
 
-        // Tier 2 (Y=6) top platform
-        const t2 = new THREE.Mesh(new THREE.CylinderGeometry(8, 8, 3, 32), new THREE.MeshStandardMaterial({ color: 0x5C4E3C }));
-        t2.position.set(0, 4.5, 0);
+        // Tier 2 (Y=6) top circular platform (radius 8, centered at 0,0)
+        const t2 = new THREE.Mesh(new THREE.CylinderGeometry(8, 8, 6, 32), new THREE.MeshStandardMaterial({ color: 0x5C4E3C }));
+        t2.position.set(0, 3, 0);
         envGroup.add(t2);
 
         // Bell Tower
@@ -703,14 +783,12 @@
         const rampGeo = new THREE.BoxGeometry(3.0, 0.35, 6.7);
         const rampMat = new THREE.MeshStandardMaterial({ color: 0x8C6747, roughness: 0.8 });
 
-        // Ramp 1 (30 deg)
         const ramp1 = new THREE.Mesh(rampGeo, rampMat);
         ramp1.position.set(23.38, 1.5, 13.5);
         ramp1.rotation.y = -Math.PI / 6;
-        ramp1.rotation.x = 0.46; // sloped incline
+        ramp1.rotation.x = 0.46;
         envGroup.add(ramp1);
 
-        // Ramp 2 (150 deg)
         const ramp2 = new THREE.Mesh(rampGeo, rampMat);
         ramp2.position.set(-23.38, 1.5, 13.5);
         ramp2.rotation.y = Math.PI / 6;
@@ -718,7 +796,7 @@
         envGroup.add(ramp2);
       }
 
-      // Build Jump Pads (Render on any night that has them)
+      // Build Jump Pads
       map.jumpPads.forEach(pad => {
         const pGroup = new THREE.Group();
         pGroup.position.set(pad.pos[0], pad.pos[1] + 0.08, pad.pos[2]);
@@ -732,16 +810,17 @@
         const pLight = new THREE.PointLight(0xF2C14E, 1.2, 5);
         pLight.position.y = 0.4;
         pGroup.add(pLight);
-
-        pGroup.collider = { type: 'cylinder', radius: pad.radius, height: 0.2 };
         envGroup.add(pGroup);
       });
 
-      // Build Lanterns
+      // Build Lanterns (with fuel & ever_lit)
       gameState.lanterns = map.lanterns.map(l => ({
         id: l.id,
         pos: [...l.pos],
         lit: false,
+        fuel: 0.0,
+        everLit: false,
+        relitCount: 0,
         deposited: 0
       }));
 
@@ -757,7 +836,6 @@
         pillar.position.y = 1.3;
         g.add(pillar);
 
-        // Bulb with warm amber beacon when unlit so players can navigate toward it
         const bulb = new THREE.Mesh(
           new THREE.SphereGeometry(0.42, 16, 16),
           new THREE.MeshStandardMaterial({ color: 0x8A4B1A, emissive: 0xD97706, emissiveIntensity: 0.65 })
@@ -769,12 +847,11 @@
         light.position.y = 2.4;
         g.add(light);
 
-        g.collider = { type: 'cylinder', radius: 1.0, height: 2.4, interactRadius: 2.0 };
         envGroup.add(g);
-        lanternMeshes.push({ id: l.id, data: l, bulb, light });
+        lanternMeshes.push({ id: l.id, data: l, group: g, bulb, light });
       });
 
-      // Charms (Bùa Gió — Taoist Wind Charm Talisman)
+      // Build Charms (Bùa Gió)
       gameState.charms = (map.charms || []).map(c => ({
         id: c.id,
         pos: [...c.pos],
@@ -785,7 +862,6 @@
         const cGroup = new THREE.Group();
         cGroup.position.set(c.pos[0], c.pos[1] + 0.6, c.pos[2]);
 
-        // Red Talisman parchment with golden borders
         const parchment = new THREE.Mesh(
           new THREE.BoxGeometry(0.45, 0.75, 0.08),
           new THREE.MeshStandardMaterial({ color: 0xC8102E, emissive: 0x8B0000, roughness: 0.3 })
@@ -801,7 +877,6 @@
         const charmLight = new THREE.PointLight(0xFF4500, 1.4, 5.0);
         cGroup.add(charmLight);
 
-        cGroup.collider = { type: 'box', size: [0.45, 0.75, 0.08], pickupRadius: 1.0 };
         envGroup.add(cGroup);
         charmMeshes.push({ data: c, mesh: cGroup });
       });
@@ -813,11 +888,11 @@
         gameState.motes.push(createMote(`M${i+1}`, pos));
       }
 
-      // Spawn Player at valid ground coordinate
+      // Spawn Player
       let startX = 0, startZ = 0, startY = 0;
       if (nightNum === 3) {
         startX = 0.0;
-        startZ = -22.0; // Tier 0 base facing +Z towards tiered mountain
+        startZ = -22.0;
         startY = map.getGround(startX, startZ) || 0.0;
       } else {
         startX = 0.0;
@@ -836,7 +911,7 @@
         gameState.shades.push(createShade([sx, sy, sz]));
       }
 
-      // Spawn Drifter (Night 2 and 3)
+      // Spawn Drifter (Night 2 & 3)
       gameState.drifters = [];
       if (nightNum >= 2) {
         const mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.35, 1.2, 8), new THREE.MeshStandardMaterial({ color: 0x8FA3B8, emissive: 0x1B2350 }));
@@ -846,15 +921,16 @@
         gameState.drifters.push({ id: 'D1', pos: [25, 1, 10], mesh, state: 'idle', stolen: 0 });
       }
 
-      // Reset Timers & Player
       moteSpawnTimer = 3.5;
-      shadeSpawnTimer = 5.0; // 300 ticks in contract
+      shadeSpawnTimer = 5.0;
       gameState.player = {
         pos: [startX, startY, startZ],
         vel: [0, 0, 0],
         grounded: true,
         flames: 3,
         carried: 0,
+        capacity: 10,
+        successfulLights: 0,
         invulnTimer: 0,
         dashCd: 0,
         dashTimer: 0,
@@ -868,6 +944,7 @@
       gameState.state = 'playing';
       isPaused = false;
       updateNightPills(nightNum);
+      applyColorblindSettings();
     }
 
     function updateNightPills(nightNum) {
@@ -947,21 +1024,19 @@
       const g = new THREE.Group();
       g.position.set(pos[0], pos[1] + 0.8, pos[2]);
 
-      // Body: dark purple/black ink sphere
       const body = new THREE.Mesh(
         new THREE.SphereGeometry(0.72, 16, 16),
         new THREE.MeshStandardMaterial({
           color: 0x0C0816,
-          emissive: 0x6B21A8,
+          emissive: colorblindMode ? 0x0088CC : 0x7A3CFF,
           emissiveIntensity: 0.65,
           roughness: 0.4
         })
       );
       g.add(body);
 
-      // Glowing sinister eyes
       const eyeGeo = new THREE.SphereGeometry(0.12, 8, 8);
-      const eyeMat = new THREE.MeshBasicMaterial({ color: 0xF43F5E });
+      const eyeMat = new THREE.MeshBasicMaterial({ color: colorblindMode ? 0x00B3FF : 0xF43F5E });
       const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
       eyeL.position.set(-0.25, 0.2, 0.55);
       g.add(eyeL);
@@ -969,8 +1044,7 @@
       eyeR.position.set(0.25, 0.2, 0.55);
       g.add(eyeR);
 
-      // Dedicated purple aura light
-      const aura = new THREE.PointLight(0xA855F7, 2.2, 8.0);
+      const aura = new THREE.PointLight(colorblindMode ? 0x00B3FF : 0xA855F7, 2.2, 8.0);
       aura.position.set(0, 0.2, 0);
       g.add(aura);
 
@@ -981,7 +1055,10 @@
         mesh: g,
         body,
         aura,
-        state: 'chase',
+        eyes: [eyeL, eyeR],
+        state: 'wander',
+        targetLanternId: null,
+        drainTimer: 0,
         stunnedTimer: 0,
         recoilTimer: 0
       };
@@ -997,23 +1074,15 @@
       if (k === 'e') triggerInteract();
       if (k === 'q') triggerPulse();
       if (e.shiftKey || k === 'shift') triggerDash();
-      if (k === ' ' || k === 'space') triggerJump();
+      if (e.code === 'Space' || k === ' ' || k === 'space') {
+        e.preventDefault();
+        triggerJump();
+      }
       if (k === 'escape' || k === 'p') togglePause();
     });
     window.addEventListener('keyup', (e) => {
       keys[e.key.toLowerCase()] = false;
     });
-
-    let camYaw = 0;
-    let lastMouseX = null;
-    window.addEventListener('mousemove', (e) => {
-      if (lastMouseX !== null) {
-        const deltaX = e.clientX - lastMouseX;
-        camYaw -= deltaX * 0.0035;
-      }
-      lastMouseX = e.clientX;
-    });
-    window.addEventListener('mouseleave', () => { lastMouseX = null; });
 
     function switchNightDirect(nightNum) {
       isPaused = false;
@@ -1031,6 +1100,7 @@
 
     function togglePause() {
       isPaused = !isPaused;
+      if (isPaused && document.pointerLockElement) document.exitPointerLock();
       document.getElementById('pause-screen').classList.toggle('active', isPaused);
     }
     document.getElementById('btn-resume').addEventListener('click', togglePause);
@@ -1052,7 +1122,7 @@
 
     function triggerDash() {
       if (gameState.state !== 'playing' || gameState.player.dashCd > 0 || gameState.player.dashTimer > 0) return;
-      gameState.player.dashTimer = 0.2; // 12 ticks
+      gameState.player.dashTimer = 0.2;
       gameState.player.dashCd = gameState.player.charmTimer > 0 ? 0 : 1.5;
       AudioSys.playDash();
     }
@@ -1067,13 +1137,15 @@
       pulseAnimTimer = 0.35;
       pulseMesh.material.opacity = 0.8;
 
-      // Stun & push shades
+      // Stun & push shades (+15 score if draining, +5 otherwise)
       gameState.shades.forEach(s => {
         const d = Math.hypot(s.pos[0] - gameState.player.pos[0], s.pos[2] - gameState.player.pos[2]);
         if (d <= 5.0) {
-          s.stunnedTimer = 2.0; // 120 ticks
+          const wasDraining = s.state === 'drain';
+          s.stunnedTimer = 2.0;
           s.state = 'stunned';
-          gameState.score += 5;
+          s.targetLanternId = null;
+          gameState.score += wasDraining ? 15 : 5;
 
           const dx = s.pos[0] - gameState.player.pos[0];
           const dz = s.pos[2] - gameState.player.pos[2];
@@ -1089,7 +1161,7 @@
         if (dist <= 5.0) {
           if (d.state === 'chase') d.state = 'flee';
           else if (d.state === 'flee' && d.stolen > 0) {
-            d.stolen = 0; // drop stolen
+            d.stolen = 0;
           }
         }
       });
@@ -1097,45 +1169,95 @@
 
     function triggerInteract() {
       if (gameState.state !== 'playing' || gameState.player.carried <= 0) return;
-      let target = null;
-      let minDist = Infinity;
+      let eligible = [];
       gameState.lanterns.forEach(l => {
-        if (!l.lit) {
-          const d = Math.hypot(gameState.player.pos[0] - l.pos[0], gameState.player.pos[2] - l.pos[2]);
-          if (d <= 2.0 && d < minDist) {
-            minDist = d;
-            target = l;
+        const d = Math.hypot(gameState.player.pos[0] - l.pos[0], gameState.player.pos[2] - l.pos[2]);
+        if (d <= 2.0) {
+          if (!l.lit) {
+            const cost = l.everLit ? 5 : 10;
+            if (l.deposited < cost) eligible.push({ lantern: l, dist: d, type: 'light' });
+          } else if (l.fuel < 100) {
+            eligible.push({ lantern: l, dist: d, type: 'refuel' });
           }
         }
       });
 
-      if (target) {
-        const needed = 10 - target.deposited;
-        const amount = Math.min(gameState.player.carried, needed);
-        if (amount > 0) {
-          gameState.player.carried -= amount;
-          target.deposited += amount;
-          AudioSys.playChime(520, 0.3);
+      if (eligible.length > 0) {
+        eligible.sort((a, b) => a.dist - b.dist);
+        const sel = eligible[0];
+        const target = sel.lantern;
 
-          if (target.deposited >= 10) {
-            target.lit = true;
-            gameState.score += 100;
-            AudioSys.playChime(880, 0.6);
+        if (sel.type === 'refuel') {
+          // Refuel lit lantern
+          const used = Math.min(gameState.player.carried, Math.ceil((100 - target.fuel) / 10));
+          if (used > 0) {
+            gameState.player.carried -= used;
+            target.fuel = Math.min(100, target.fuel + 10 * used);
+            gameState.score += 5 * used;
+            AudioSys.playChime(620, 0.25);
 
-            const lObj = lanternMeshes.find(m => m.id === target.id);
-            if (lObj) {
-              lObj.bulb.material.color.setHex(0xFFF1C5);
-              lObj.bulb.material.emissive.setHex(0xF2C14E);
-              lObj.bulb.material.emissiveIntensity = 1.2;
-              lObj.light.color.setHex(0xFFD56B);
-              lObj.light.intensity = 3.5;
-              lObj.light.distance = 22;
+            // Release draining shades if fuel restored to >= 30
+            if (target.fuel >= 30) {
+              gameState.shades.forEach(s => {
+                if (s.state === 'drain' && s.targetLanternId === target.id) {
+                  s.state = 'wander';
+                  s.targetLanternId = null;
+                }
+              });
             }
+          }
+        } else {
+          // Light unlit lantern (first time or relight)
+          const cost = target.everLit ? 5 : 10;
+          const needed = cost - target.deposited;
+          const amount = Math.min(gameState.player.carried, needed);
+          if (amount > 0) {
+            gameState.player.carried -= amount;
+            target.deposited += amount;
+            gameState.score += 5 * amount;
+            AudioSys.playChime(520, 0.3);
 
-            if (gameState.lanterns.every(l => l.lit)) {
-              gameState.state = 'won';
-              gameState.score += Math.floor(gameState.timeLeft) * 2 + gameState.player.flames * 50;
-              showResult(true);
+            if (target.deposited >= cost) {
+              const isRelight = target.everLit;
+              target.lit = true;
+              target.fuel = 100.0;
+              target.deposited = 0;
+              target.everLit = true;
+              gameState.player.successfulLights++;
+              gameState.player.capacity = Math.min(20, 10 + 2 * gameState.player.successfulLights);
+
+              if (isRelight) {
+                target.relitCount++;
+                gameState.score += 40;
+              } else {
+                gameState.score += 100;
+              }
+              AudioSys.playChime(880, 0.6);
+
+              // Update lantern mesh visuals
+              const lObj = lanternMeshes.find(m => m.id === target.id);
+              if (lObj) {
+                lObj.bulb.material.color.setHex(0xFFF1C5);
+                lObj.bulb.material.emissive.setHex(0xF2C14E);
+                lObj.bulb.material.emissiveIntensity = 1.2;
+                lObj.light.color.setHex(0xFFD56B);
+                lObj.light.intensity = 3.5;
+                lObj.light.distance = 22;
+              }
+
+              // Push shades out
+              gameState.shades.forEach(s => {
+                const d = Math.hypot(s.pos[0] - target.pos[0], s.pos[2] - target.pos[2]);
+                if (d < 6.0) {
+                  const dx = s.pos[0] - target.pos[0];
+                  const dz = s.pos[2] - target.pos[2];
+                  const len = Math.hypot(dx, dz) || 1;
+                  s.pos[0] = target.pos[0] + (dx / len) * 6.1;
+                  s.pos[2] = target.pos[2] + (dz / len) * 6.1;
+                  s.state = 'wander';
+                  s.targetLanternId = null;
+                }
+              });
             }
           }
         }
@@ -1143,11 +1265,12 @@
     }
 
     function showResult(won, reason = '') {
-      document.getElementById('result-title').innerText = won ? 'CHIẾN THẮNG!' : 'BÓNG ĐÊM NUỐT CHỬNG';
+      if (document.pointerLockElement) document.exitPointerLock();
+      document.getElementById('result-title').innerText = won ? 'BÌNH MINH TRỞ LẠI!' : 'BÓNG ĐÊM NUỐT CHỬNG';
       document.getElementById('result-title').style.color = won ? '#F2C14E' : '#FF5A5F';
       document.getElementById('result-desc').innerText = won
-        ? (currentNight === 3 ? 'Bình minh rực rỡ đã trở lại trên toàn cõi Đảo Đèn Lồng!' : `Mây đã thắp sáng tất cả ngọn đèn Đêm ${currentNight}!`)
-        : (reason === 'dawn' ? 'Bình minh đã đến nhưng các ngọn đèn chưa kịp thắp...' : 'Mây đã kiệt sức trước lũ Bóng Mực...');
+        ? `Mây đã bảo vệ đảo sáng tới bình minh thành công! (Lý do: dawn_survived)`
+        : (reason === 'dawn' ? 'Bình minh đã đến nhưng số đèn thắp sáng không đủ điều kiện...' : 'Mây đã kiệt sức trước lũ Bóng Mực...');
       document.getElementById('final-score').innerText = gameState.score;
       document.getElementById('btn-next-night').style.display = won && currentNight < 3 ? 'inline-block' : 'none';
       document.getElementById('result-screen').classList.add('active');
@@ -1163,15 +1286,75 @@
 
       if (!isPaused && gameState.state === 'playing') {
         gameState.timeLeft = Math.max(0, gameState.timeLeft - dt);
+
+        // Win / Lose condition at dawn
         if (gameState.timeLeft <= 0) {
-          gameState.state = 'lost';
-          showResult(false, 'dawn');
+          const litCount = gameState.lanterns.filter(l => l.lit).length;
+          const req = MAPS_DATA[currentNight].winRequired;
+          if (litCount >= req) {
+            gameState.state = 'won';
+            // Dawn win bonuses
+            let bonus = 0;
+            gameState.lanterns.forEach(l => {
+              if (l.lit) bonus += 50 + Math.floor(l.fuel);
+            });
+            bonus += 50 * gameState.player.flames;
+            gameState.score += bonus;
+            showResult(true, 'dawn_survived');
+          } else {
+            gameState.state = 'lost';
+            showResult(false, 'dawn');
+          }
         }
 
         if (gameState.player.invulnTimer > 0) gameState.player.invulnTimer -= dt;
         if (gameState.player.dashCd > 0) gameState.player.dashCd -= dt;
         if (gameState.player.pulseCd > 0) gameState.player.pulseCd -= dt;
         if (gameState.player.charmTimer > 0) gameState.player.charmTimer -= dt;
+
+        // Lantern Fuel Decay (1.0/s) & Drain (5.0/s per draining shade)
+        gameState.lanterns.forEach(l => {
+          if (l.lit) {
+            let decay = 1.0 * dt;
+            const drainingCount = gameState.shades.filter(s => s.state === 'drain' && s.targetLanternId === l.id).length;
+            decay += drainingCount * 5.0 * dt;
+
+            l.fuel = Math.max(0, l.fuel - decay);
+
+            // Extinguish if fuel <= 0
+            if (l.fuel <= 0) {
+              l.lit = false;
+              l.fuel = 0;
+              l.deposited = 0;
+              l.everLit = true;
+
+              const lObj = lanternMeshes.find(m => m.id === l.id);
+              if (lObj) {
+                lObj.bulb.material.color.setHex(0x8A4B1A);
+                lObj.bulb.material.emissive.setHex(0xD97706);
+                lObj.bulb.material.emissiveIntensity = 0.65;
+                lObj.light.color.setHex(0xF2A83B);
+                lObj.light.intensity = 0.9;
+                lObj.light.distance = 10;
+              }
+
+              gameState.shades.forEach(s => {
+                if (s.state === 'drain' && s.targetLanternId === l.id) {
+                  s.state = 'wander';
+                  s.targetLanternId = null;
+                }
+              });
+            } else if (l.fuel < 30) {
+              // 1 Hz blink warning when fuel < 30
+              const blink = Math.sin(time * 0.006) > 0;
+              const lObj = lanternMeshes.find(m => m.id === l.id);
+              if (lObj) {
+                lObj.light.intensity = blink ? 3.5 : 0.8;
+                lObj.bulb.material.emissiveIntensity = blink ? 1.2 : 0.4;
+              }
+            }
+          }
+        });
 
         // 1. Horizontal Player Movement
         let mx = 0, mz = 0;
@@ -1187,61 +1370,68 @@
           const nx = mx / len;
           const nz = mz / len;
 
-          const worldX = -nx * Math.cos(camYaw) + nz * Math.sin(camYaw);
-          const worldZ = nx * Math.sin(camYaw) + nz * Math.cos(camYaw);
+          // Standard camera yaw transformation
+          const worldX = nx * Math.cos(camYaw) + nz * Math.sin(camYaw);
+          const worldZ = -nx * Math.sin(camYaw) + nz * Math.cos(camYaw);
           gameState.player.dashDir = [worldX, worldZ];
 
-          if (gameState.player.dashTimer > 0) {
-            gameState.player.pos[0] += worldX * 14.0 * dt;
-            gameState.player.pos[2] += worldZ * 14.0 * dt;
-          } else if (!gameState.player.isLaunched) {
-            // Cliff wall collision on tiered maps (Night 3): prevent walking into cliffs
-            let canMove = true;
-            if (currentNight === 3) {
-              const testX = gameState.player.pos[0] + worldX * moveSpeed * dt;
-              const testZ = gameState.player.pos[2] + worldZ * moveSpeed * dt;
-              const targetGround = MAPS_DATA[3].getGround(testX, testZ);
-              if (targetGround !== null && (targetGround - gameState.player.pos[1]) > 0.6) {
-                canMove = false; // blocked by vertical cliff wall
+          const curDist = gameState.player.dashTimer > 0 ? 14.0 * dt : moveSpeed * dt;
+          let testX = gameState.player.pos[0] + worldX * curDist;
+          let testZ = gameState.player.pos[2] + worldZ * curDist;
+
+          // Cliff Boundary Collision on Night 3
+          let blocked = false;
+          if (currentNight === 3) {
+            const tr = Math.hypot(testX, testZ);
+            // Tier 0 player trying to walk into Tier 1 cliff (r <= 24, z > 0)
+            if (gameState.player.pos[1] < 2.5 && tr <= 24.0 && testZ > 0) {
+              // Check if in 3m ramp corridors (30 deg or 150 deg)
+              const checkRamp = (deg) => {
+                const rad = (deg * Math.PI) / 180;
+                const cross = Math.abs(testX * Math.sin(rad) - testZ * Math.cos(rad));
+                return cross <= 1.5 && tr >= 24.0 && tr <= 30.0;
+              };
+              if (!checkRamp(30) && !checkRamp(150)) {
+                blocked = true;
               }
             }
-            if (canMove) {
-              gameState.player.pos[0] += worldX * moveSpeed * dt;
-              gameState.player.pos[2] += worldZ * moveSpeed * dt;
+            // Tier 1 player trying to walk into Tier 2 cliff (r <= 8.0)
+            if (gameState.player.pos[1] < 5.5 && tr <= 8.0) {
+              blocked = true;
             }
           }
+
+          if (!blocked && !gameState.player.isLaunched) {
+            gameState.player.pos[0] = testX;
+            gameState.player.pos[2] = testZ;
+          }
           mayGroup.rotation.y = Math.atan2(worldX, worldZ);
-        } else if (gameState.player.dashTimer > 0) {
-          gameState.player.pos[0] += gameState.player.dashDir[0] * 14.0 * dt;
-          gameState.player.pos[2] += gameState.player.dashDir[1] * 14.0 * dt;
         }
 
-        // 2. Dash countdown
         if (gameState.player.dashTimer > 0) {
           gameState.player.dashTimer -= dt;
         }
 
-        // 3. Jump Pad Launch horizontal movement
+        // 2. Jump Pad Launch horizontal movement
         if (gameState.player.isLaunched) {
           gameState.player.pos[0] += gameState.player.vel[0] * dt;
           gameState.player.pos[2] += gameState.player.vel[2] * dt;
         }
 
-        // 4. Ground height check
+        // 3. Ground height check
         const ground = MAPS_DATA[currentNight].getGround(gameState.player.pos[0], gameState.player.pos[2]);
 
-        // 5. Vertical Gravity (applied EXACTLY ONCE per frame when in air)
+        // 4. Vertical Gravity (applies whenever in air or moving upward)
         if (gameState.player.dashTimer <= 0) {
-          if (ground === null || gameState.player.pos[1] > ground + 0.001) {
-            gameState.player.grounded = false;
+          if (!gameState.player.grounded || gameState.player.vel[1] !== 0) {
             gameState.player.vel[1] += -20.0 * dt;
             gameState.player.pos[1] += gameState.player.vel[1] * dt;
           }
         }
 
-        // 6. Ground landing & fall off check
+        // 5. Ground landing & fall off check
         if (ground !== null) {
-          if (gameState.player.pos[1] <= ground) {
+          if (gameState.player.vel[1] <= 0 && gameState.player.pos[1] <= ground) {
             gameState.player.pos[1] = ground;
             gameState.player.vel[1] = 0;
             gameState.player.vel[0] = 0;
@@ -1250,7 +1440,6 @@
             gameState.player.isLaunched = false;
           }
         } else {
-          // Falling into void
           if (gameState.player.pos[1] < -10.0) {
             gameState.player.flames -= 1;
             gameState.player.carried = 0;
@@ -1269,13 +1458,14 @@
           }
         }
 
-        // 7. Jump pads trigger
+        // 6. Jump pads trigger
         MAPS_DATA[currentNight].jumpPads.forEach(pad => {
           const d = Math.hypot(gameState.player.pos[0] - pad.pos[0], gameState.player.pos[2] - pad.pos[2]);
           if (d <= pad.radius && gameState.player.grounded) {
             gameState.player.isLaunched = true;
             gameState.player.grounded = false;
             gameState.player.vel[1] = pad.vy;
+            gameState.player.pos[1] += 0.05;
             AudioSys.playDash();
             if (pad.target) {
               const dx = pad.target[0] - pad.pos[0];
@@ -1292,13 +1482,12 @@
 
         mayGroup.position.set(gameState.player.pos[0], gameState.player.pos[1], gameState.player.pos[2]);
 
-        // Pickup Motes
+        // Pickup Motes (capacity limited)
         for (let i = gameState.motes.length - 1; i >= 0; i--) {
           const m = gameState.motes[i];
           const d = Math.hypot(m.pos[0] - gameState.player.pos[0], m.pos[2] - gameState.player.pos[2]);
-          if (d <= 1.0 && Math.abs(m.pos[1] - gameState.player.pos[1]) <= 1.5 && gameState.player.carried < 10) {
+          if (d <= 1.0 && Math.abs(m.pos[1] - gameState.player.pos[1]) <= 1.5 && gameState.player.carried < gameState.player.capacity) {
             gameState.player.carried += 1;
-            gameState.score += 10;
             envGroup.remove(m.mesh);
             gameState.motes.splice(i, 1);
             AudioSys.playChime(650, 0.2);
@@ -1308,7 +1497,7 @@
           }
         }
 
-        // Periodic Mote Respawning (Ticket-02 standard: cap 30, continuous replenishing)
+        // Periodic Mote Respawn
         moteSpawnTimer -= dt;
         if (moteSpawnTimer <= 0) {
           moteSpawnTimer = gameState.motes.length < 12 ? 2.0 : 3.5;
@@ -1319,14 +1508,14 @@
           }
         }
 
-        // Pickup Charms (Bùa Gió — Wind Charm)
+        // Pickup Charms (Bùa Gió)
         gameState.charms.forEach(c => {
           if (c.available) {
             const d = Math.hypot(c.pos[0] - gameState.player.pos[0], c.pos[2] - gameState.player.pos[2]);
             if (d <= 1.0) {
               c.available = false;
-              c.respawnTimer = 45; // 2700 ticks = 45s
-              gameState.player.charmTimer = 10; // 600 ticks = 10s
+              c.respawnTimer = 45;
+              gameState.player.charmTimer = 10;
               AudioSys.playChime(950, 0.4);
 
               const pb = document.getElementById('prompt-banner');
@@ -1344,7 +1533,7 @@
           if (cm.data.available) cm.mesh.rotation.y += dt * 2;
         });
 
-        // Periodic Shade Spawning (Ticket-02 standard: spawn every 8s, up to 5 in N1, 7 in N2, 9 in N3)
+        // Periodic Shade Spawning
         shadeSpawnTimer -= dt;
         const maxShades = currentNight === 1 ? 5 : (currentNight === 2 ? 7 : 9);
         if (shadeSpawnTimer <= 0 && gameState.shades.length < maxShades) {
@@ -1359,20 +1548,29 @@
           }
         }
 
-        // Shades AI
+        // Shades AI & Drain Logic
         gameState.shades.forEach(s => {
           if (s.stunnedTimer > 0) {
             s.stunnedTimer -= dt;
             s.mesh.rotation.y += dt * 8;
             s.aura.intensity = 0.5;
-            s.body.material.emissive.setHex(0x3B185F);
           } else if (s.recoilTimer > 0) {
             s.recoilTimer -= dt;
-          } else {
-            s.aura.intensity = 1.8;
-            s.body.material.emissive.setHex(0x7A3CFF);
+          } else if (s.state === 'drain') {
+            // In drain state: stands still, drains 5 fuel/s
+            s.aura.intensity = 2.5;
+            const distToPlayer = Math.hypot(s.pos[0] - gameState.player.pos[0], s.pos[2] - gameState.player.pos[2]);
+            const tLan = gameState.lanterns.find(l => l.id === s.targetLanternId);
 
-            // 1. Separation force from other shades (PREVENTS MERGING)
+            if (distToPlayer <= 6.0) {
+              s.state = 'chase';
+              s.targetLanternId = null;
+            } else if (!tLan || !tLan.lit || tLan.fuel >= 30 || Math.hypot(s.pos[0] - tLan.pos[0], s.pos[2] - tLan.pos[2]) > 2.0) {
+              s.state = 'wander';
+              s.targetLanternId = null;
+            }
+          } else {
+            // Separation
             let sepX = 0, sepZ = 0;
             gameState.shades.forEach(other => {
               if (other !== s) {
@@ -1387,52 +1585,66 @@
               }
             });
 
-            // 2. Flanking target angle around Mây
-            const shadeIdx = (parseInt(s.id.replace(/\D/g, '')) || 1);
-            const flankAngle = (shadeIdx * 1.35) % (Math.PI * 2);
-            const flankDist = 1.2;
-            const targetX = gameState.player.pos[0] + Math.cos(flankAngle) * flankDist;
-            const targetZ = gameState.player.pos[2] + Math.sin(flankAngle) * flankDist;
-
-            const dx = targetX - s.pos[0];
-            const dz = targetZ - s.pos[2];
-            const d = Math.hypot(dx, dz);
-
-            // Rotate shade to face direction of motion
-            s.mesh.rotation.y = Math.atan2(dx, dz);
-
-            const speed = currentNight === 3 ? 4.5 : 4.0;
-            let moveX = 0, moveZ = 0;
-
-            if (d <= 24.0) {
-              // Aggressive chase towards Mây with separation
+            const distToPlayer = Math.hypot(s.pos[0] - gameState.player.pos[0], s.pos[2] - gameState.player.pos[2]);
+            if (distToPlayer <= 12.0) {
               s.state = 'chase';
-              moveX = (dx / (d || 1)) * speed * dt + sepX * dt;
-              moveZ = (dz / (d || 1)) * speed * dt + sepZ * dt;
-            } else {
-              // Roam / patrol towards player region so they actively converge
+              s.targetLanternId = null;
+            } else if (distToPlayer > 18.0 && s.state === 'chase') {
               s.state = 'wander';
-              const wanderX = gameState.player.pos[0] * 0.6;
-              const wanderZ = gameState.player.pos[2] * 0.6;
-              const wdx = wanderX - s.pos[0];
-              const wdz = wanderZ - s.pos[2];
-              const wlen = Math.hypot(wdx, wdz) || 1;
-              moveX = (wdx / wlen) * (speed * 0.6) * dt + sepX * dt;
-              moveZ = (wdz / wlen) * (speed * 0.6) * dt + sepZ * dt;
+            }
+
+            let moveX = 0, moveZ = 0;
+            const speed = currentNight === 3 ? 4.5 : 4.0;
+
+            if (s.state === 'chase') {
+              const dx = gameState.player.pos[0] - s.pos[0];
+              const dz = gameState.player.pos[2] - s.pos[2];
+              const d = Math.hypot(dx, dz) || 1;
+              moveX = (dx / d) * speed * dt + sepX * dt;
+              moveZ = (dz / d) * speed * dt + sepZ * dt;
+              s.mesh.rotation.y = Math.atan2(dx, dz);
+            } else {
+              // Wander: seek weak lantern (< 30 fuel); if none, seek unlit lantern
+              let weakL = gameState.lanterns.filter(l => l.lit && l.fuel < 30);
+              let targetL = null;
+              if (weakL.length > 0) {
+                weakL.sort((a, b) => Math.hypot(s.pos[0] - a.pos[0], s.pos[2] - a.pos[2]) - Math.hypot(s.pos[0] - b.pos[0], s.pos[2] - b.pos[2]));
+                targetL = weakL[0];
+              } else {
+                let unlit = gameState.lanterns.filter(l => !l.lit);
+                if (unlit.length > 0) {
+                  unlit.sort((a, b) => Math.hypot(s.pos[0] - a.pos[0], s.pos[2] - a.pos[2]) - Math.hypot(s.pos[0] - b.pos[0], s.pos[2] - b.pos[2]));
+                  targetL = unlit[0];
+                }
+              }
+
+              if (targetL) {
+                s.targetLanternId = targetL.id;
+                const dTarget = Math.hypot(s.pos[0] - targetL.pos[0], s.pos[2] - targetL.pos[2]);
+                if (targetL.lit && targetL.fuel < 30 && dTarget <= 2.0) {
+                  s.state = 'drain';
+                } else {
+                  const dx = targetL.pos[0] - s.pos[0];
+                  const dz = targetL.pos[2] - s.pos[2];
+                  const d = Math.hypot(dx, dz) || 1;
+                  moveX = (dx / d) * (speed * 0.7) * dt + sepX * dt;
+                  moveZ = (dz / d) * (speed * 0.7) * dt + sepZ * dt;
+                  s.mesh.rotation.y = Math.atan2(dx, dz);
+                }
+              }
             }
 
             let nextX = s.pos[0] + moveX;
             let nextZ = s.pos[2] + moveZ;
 
-            // Safe Zone avoidance: lit lanterns repel/block shades at 6m
+            // Safe Zone avoidance: only lanterns with fuel >= 30 repel shades
             for (const l of gameState.lanterns) {
-              if (l.lit) {
+              if (l.lit && l.fuel >= 30) {
                 const distToLantern = Math.hypot(nextX - l.pos[0], nextZ - l.pos[2]);
                 if (distToLantern < 6.0) {
                   const lx = nextX - l.pos[0];
                   const lz = nextZ - l.pos[2];
                   const lDist = Math.hypot(lx, lz) || 1;
-                  // Slide around safe zone perimeter
                   nextX = l.pos[0] + (lx / lDist) * 6.05;
                   nextZ = l.pos[2] + (lz / lDist) * 6.05;
                   break;
@@ -1447,16 +1659,14 @@
               s.pos[2] = nextZ;
             }
 
-            // Floating bobbing effect
             s.mesh.position.set(s.pos[0], s.pos[1] + 0.8 + Math.sin(time * 0.005 + (s.id.charCodeAt(1) || 0)) * 0.12, s.pos[2]);
 
             // Hit player
-            if (gameState.player.invulnTimer <= 0 && d <= 1.0 && Math.abs(s.pos[1] - gameState.player.pos[1]) <= 1.5) {
+            if (gameState.player.invulnTimer <= 0 && distToPlayer <= 1.0 && Math.abs(s.pos[1] - gameState.player.pos[1]) <= 1.5) {
               gameState.player.flames -= 1;
               gameState.player.invulnTimer = 1.5;
-              s.recoilTimer = 1.0; // recoil for 60 ticks = 1s
+              s.recoilTimer = 1.0;
 
-              // Drop floor(carried / 2) motes in 1.5-2.5m ring
               const droppedCount = Math.floor(gameState.player.carried / 2);
               gameState.player.carried -= droppedCount;
               for (let k = 0; k < droppedCount; k++) {
@@ -1472,7 +1682,6 @@
               }
 
               AudioSys.playHit();
-
               if (gameState.player.flames <= 0) {
                 gameState.state = 'lost';
                 showResult(false, 'flames');
@@ -1542,10 +1751,12 @@
         else timerBadge.classList.remove('danger');
 
         const litCount = gameState.lanterns.filter(l => l.lit).length;
-        document.getElementById('lanterns-lit').innerText = `${litCount} / ${gameState.lanterns.length}`;
+        const reqCount = MAPS_DATA[currentNight].winRequired;
+        document.getElementById('lanterns-lit').innerText = `${litCount} / ${gameState.lanterns.length} (cần ${reqCount})`;
+        document.getElementById('capacity-val').innerText = `${gameState.player.carried} / ${gameState.player.capacity}`;
         document.getElementById('score-val').innerText = gameState.score;
 
-        ambientLight.intensity = 0.22 + 0.22 * (litCount / gameState.lanterns.length);
+        ambientLight.intensity = 0.20 + 0.24 * (litCount / gameState.lanterns.length);
 
         const flameIcons = document.querySelectorAll('.flame-icon');
         flameIcons.forEach((fi, idx) => {
@@ -1553,7 +1764,17 @@
           else fi.classList.add('lost');
         });
 
-        const slots = document.querySelectorAll('.mote-slot');
+        // Dynamic Mote Bar Slots
+        const moteBar = document.getElementById('mote-bar');
+        while (moteBar.children.length < gameState.player.capacity) {
+          const slot = document.createElement('div');
+          slot.className = 'mote-slot';
+          moteBar.appendChild(slot);
+        }
+        while (moteBar.children.length > gameState.player.capacity) {
+          moteBar.removeChild(moteBar.lastChild);
+        }
+        const slots = moteBar.querySelectorAll('.mote-slot');
         slots.forEach((s, idx) => {
           if (idx < gameState.player.carried) s.classList.add('filled');
           else s.classList.remove('filled');
@@ -1562,16 +1783,24 @@
         document.getElementById('dash-cd-overlay').style.height = `${(Math.max(0, gameState.player.dashCd) / 1.5) * 100}%`;
         document.getElementById('pulse-cd-overlay').style.height = `${(Math.max(0, gameState.player.pulseCd) / 3.0) * 100}%`;
 
+        // Prompt Banner for nearby lantern (refuel or light)
         let nearLantern = null;
         gameState.lanterns.forEach(l => {
-          if (!l.lit) {
-            const d = Math.hypot(gameState.player.pos[0] - l.pos[0], gameState.player.pos[2] - l.pos[2]);
-            if (d <= 2.0) nearLantern = l;
-          }
+          const d = Math.hypot(gameState.player.pos[0] - l.pos[0], gameState.player.pos[2] - l.pos[2]);
+          if (d <= 2.0) nearLantern = l;
         });
         const promptBanner = document.getElementById('prompt-banner');
         if (nearLantern) {
-          promptBanner.innerText = `E — Nạp ánh sáng (${nearLantern.deposited}/10)`;
+          if (nearLantern.lit) {
+            promptBanner.innerText = nearLantern.fuel < 100
+              ? `E — Châm dầu [${Math.round(nearLantern.fuel)}/100] (Cần ${Math.ceil((100 - nearLantern.fuel) / 10)} đom đóm)`
+              : `Đèn Lớn đầy dầu [100/100]`;
+          } else {
+            const cost = nearLantern.everLit ? 5 : 10;
+            promptBanner.innerText = nearLantern.everLit
+              ? `E — Thắp lại đèn (${nearLantern.deposited}/${cost})`
+              : `E — Nạp ánh sáng (${nearLantern.deposited}/${cost})`;
+          }
           promptBanner.classList.add('visible');
         } else {
           promptBanner.classList.remove('visible');

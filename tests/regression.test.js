@@ -21,7 +21,8 @@ test('REGRESSION: Player picks up mote within pickup_radius', () => {
   assert.equal(events.length, 1);
   assert.equal(events[0].name, 'mote_picked');
   assert.equal(events[0].data.carried, 1);
-  assert.equal(engine.score, 10);
+  // Contract v1.2 rule: motes score +5 when deposited to lanterns, not upon pickup
+  assert.equal(engine.score, 0);
 });
 
 test('REGRESSION: Deposit motes and light lantern when cost reached', () => {
@@ -46,7 +47,8 @@ test('REGRESSION: Deposit motes and light lantern when cost reached', () => {
   assert.ok(litEvent);
   assert.equal(litEvent.data.lantern_id, 'L1');
   assert.equal(engine.player.carried, 0);
-  assert.equal(engine.score, 100);
+  // Contract v1.2 rule: 10 motes deposited * 5 = +50, + 100 for first-time light = 150
+  assert.equal(engine.score, 150);
 });
 
 test('REGRESSION: Pulse consumes 3 motes, stuns shades and pushes', () => {

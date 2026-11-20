@@ -17,6 +17,11 @@ export function round3(val) {
   return Object.is(rounded, -0) ? 0 : rounded;
 }
 
+export function round1(val) {
+  const rounded = Math.round(val * 10) / 10;
+  return Object.is(rounded, -0) ? 0 : rounded;
+}
+
 export function distanceXZ(posA, posB) {
   const dx = posA[0] - posB[0];
   const dz = posA[2] - posB[2];
