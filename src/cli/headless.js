@@ -83,7 +83,7 @@ async function run() {
   const options = parseArgs(process.argv.slice(2));
 
   if (typeof options.ticks !== 'number' || !options.out) {
-    process.stderr.write('Usage: headless.js --seed <int> --night 1 [--scenario <file.json>] [--inputs <file.json>] --ticks <int> --out <file.jsonl> [--snapshot-every <int>]\n');
+    process.stderr.write('Usage: headless.js --seed <int> --night <1|2|3> [--scenario <file.json>] [--inputs <file.json>] --ticks <int> --out <file.jsonl> [--snapshot-every <int>]\n');
     process.exit(1);
   }
 
@@ -104,7 +104,6 @@ async function run() {
   }
 
   const outStream = fs.createWriteStream(options.out, { encoding: 'utf8' });
-
   const writeLine = (obj) => {
     outStream.write(JSON.stringify(obj) + '\n');
   };
@@ -125,7 +124,9 @@ async function run() {
     cam_yaw_deg: 0,
     interact: false,
     pulse: false,
-    jump: false
+    dash: false,
+    jump: false,
+    pause: false
   };
 
   for (let k = 0; k < options.ticks; k++) {
@@ -143,8 +144,14 @@ async function run() {
       if (typeof update.pulse === 'boolean') {
         currentInput.pulse = update.pulse;
       }
+      if (typeof update.dash === 'boolean') {
+        currentInput.dash = update.dash;
+      }
       if (typeof update.jump === 'boolean') {
         currentInput.jump = update.jump;
+      }
+      if (typeof update.pause === 'boolean') {
+        currentInput.pause = update.pause;
       }
     }
 
@@ -158,7 +165,7 @@ async function run() {
       writeLine(engine.getSnapshot());
     }
 
-    if (engine.state !== 'playing') {
+    if (engine.state === 'won' || engine.state === 'lost') {
       break;
     }
   }

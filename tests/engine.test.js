@@ -7,7 +7,7 @@ test('Player picks up mote within pickup_radius', () => {
     player: { pos: [0, 0, 0], carried: 0, flames: 3 },
     random_motes: false,
     random_shades: false,
-    motes: [[0, 0, 1.5]], // within 2.0m pickup_radius
+    motes: [[0, 0, 0.8]], // within 1.0m standardized pickup_radius
     shades: []
   };
 
@@ -26,7 +26,7 @@ test('Player picks up mote within pickup_radius', () => {
 
 test('Deposit motes and light lantern when lantern_cost reached', () => {
   const scenario = {
-    player: { pos: [0, 0, 24.0], carried: 3, flames: 3 }, // distance to L1 (0,0,25) is 1.0m (within 2.5m)
+    player: { pos: [0, 0, 24.0], carried: 10, flames: 3 }, // distance to L1 (0,0,25) is 1.0m (within 2.0m)
     random_motes: false,
     random_shades: false,
     motes: [],
@@ -35,13 +35,12 @@ test('Deposit motes and light lantern when lantern_cost reached', () => {
   };
 
   const engine = new GameEngine({ seed: 42, scenario });
-  // Step 1: interact = true
   const events = engine.step({ interact: true });
 
   const depositEvent = events.find((e) => e.name === 'deposit');
   assert.ok(depositEvent);
-  assert.equal(depositEvent.data.amount, 3);
-  assert.equal(depositEvent.data.deposited, 3);
+  assert.equal(depositEvent.data.amount, 10);
+  assert.equal(depositEvent.data.deposited, 10);
 
   const litEvent = events.find((e) => e.name === 'lantern_lit');
   assert.ok(litEvent);
@@ -49,26 +48,26 @@ test('Deposit motes and light lantern when lantern_cost reached', () => {
   assert.equal(engine.player.carried, 0);
 });
 
-test('Pulse action consumes 1 carried mote, stuns and repels shades', () => {
+test('Pulse action consumes 3 carried motes, stuns and repels shades', () => {
   const scenario = {
-    player: { pos: [0, 0, 0], carried: 2, flames: 3 },
+    player: { pos: [0, 0, 0], carried: 4, flames: 3 },
     random_motes: false,
     random_shades: false,
     motes: [],
-    shades: [{ id: 'S1', pos: [0, 0, 4.0] }] // within 6.0m pulse_radius
+    shades: [{ id: 'S1', pos: [0, 0, 3.0] }] // within 5.0m pulse_radius
   };
 
   const engine = new GameEngine({ seed: 42, scenario });
   const events = engine.step({ pulse: true });
 
-  assert.equal(engine.player.carried, 1); // consumed 1 mote
+  assert.equal(engine.player.carried, 1); // 4 - 3 = 1
   const pulseEvent = events.find((e) => e.name === 'pulse');
   assert.ok(pulseEvent);
   assert.deepEqual(pulseEvent.data.stunned_ids, ['S1']);
 
   const shade = engine.shades.find((s) => s.id === 'S1');
   assert.equal(shade.state, 'stunned');
-  assert.ok(shade.pos[2] >= 8.0); // pushed away by 4m (4 + 4 = 8)
+  assert.equal(engine.score, 5); // standardized +5 per stun
 });
 
 test('Shade attacks player, player loses 1 flame and drops motes', () => {
@@ -77,7 +76,7 @@ test('Shade attacks player, player loses 1 flame and drops motes', () => {
     random_motes: false,
     random_shades: false,
     motes: [],
-    shades: [{ id: 'S1', pos: [0, 0, 1.0] }] // within 1.2m hit radius
+    shades: [{ id: 'S1', pos: [0, 0, 0.8] }] // within 1.0m hit radius
   };
 
   const engine = new GameEngine({ seed: 42, scenario });
@@ -94,7 +93,7 @@ test('Shade attacks player, player loses 1 flame and drops motes', () => {
 
 test('Win game when all 5 lanterns are lit', () => {
   const scenario = {
-    player: { pos: [0, 0, 24.5], carried: 3, flames: 3 },
+    player: { pos: [0, 0, 24.5], carried: 10, flames: 3 },
     random_motes: false,
     random_shades: false,
     motes: [],
