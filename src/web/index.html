@@ -1137,6 +1137,22 @@
       parent.add(g);
     }
 
+    // Helper: Đêm 3 — điểm (x,z) ở độ cao currY có bị chặn bởi tường bậc thang không?
+    // (Tier 1 tại z>0 chỉ lên được qua dốc 30°/150°; Tier 2 chỉ lên được qua bục nhảy)
+    function isNight3WallBlocked(currY, x, z) {
+      const tr = Math.hypot(x, z);
+      if (currY < 2.5 && tr <= 24.0 && z > 0) {
+        const checkRamp = (deg) => {
+          const rad = (deg * Math.PI) / 180;
+          const cross = Math.abs(x * Math.sin(rad) - z * Math.cos(rad));
+          return cross <= 1.5 && tr >= 24.0 && tr <= 30.0;
+        };
+        if (!checkRamp(30) && !checkRamp(150)) return true;
+      }
+      if (currY < 5.5 && tr <= 8.0) return true;
+      return false;
+    }
+
     let lanternMeshes = [];
     let moteMeshes = [];
     let shadeMeshes = [];
@@ -2072,18 +2088,7 @@
             let testZ = gameState.player.pos[2] + worldZ * curDist;
 
             let blocked = false;
-            if (currentNight === 3) {
-              const tr = Math.hypot(testX, testZ);
-              if (gameState.player.pos[1] < 2.5 && tr <= 24.0 && testZ > 0) {
-                const checkRamp = (deg) => {
-                  const rad = (deg * Math.PI) / 180;
-                  const cross = Math.abs(testX * Math.sin(rad) - testZ * Math.cos(rad));
-                  return cross <= 1.5 && tr >= 24.0 && tr <= 30.0;
-                };
-                if (!checkRamp(30) && !checkRamp(150)) blocked = true;
-              }
-              if (gameState.player.pos[1] < 5.5 && tr <= 8.0) blocked = true;
-            }
+            if (currentNight === 3 && isNight3WallBlocked(gameState.player.pos[1], testX, testZ)) blocked = true;
 
             if (!blocked && !gameState.player.isLaunched) {
               gameState.player.pos[0] = testX;
@@ -2100,16 +2105,26 @@
           }
 
           const ground = MAPS_DATA[currentNight].getGround(gameState.player.pos[0], gameState.player.pos[2]);
+          const prevY = gameState.player.pos[1];
 
           if (gameState.player.dashTimer <= 0) {
-            if (!gameState.player.grounded || gameState.player.vel[1] !== 0) {
+            // Fix "bay ngang khi bước ra mép bục": nếu đang chạm đất / đứng yên theo phương dọc
+            // nhưng đất dưới chân đã thấp hơn vị trí hiện tại (hoặc hết đất) → bắt đầu rơi ngay.
+            const walkedOffLedge = ground !== null && gameState.player.pos[1] > ground + 0.001;
+            if (!gameState.player.grounded || gameState.player.vel[1] !== 0 || walkedOffLedge || ground === null) {
+              gameState.player.grounded = false;
               gameState.player.vel[1] += -20.0 * dt;
               gameState.player.pos[1] += gameState.player.vel[1] * dt;
             }
           }
 
           if (ground !== null) {
-            if (gameState.player.vel[1] <= 0 && gameState.player.pos[1] <= ground) {
+            // Hạ cánh chỉ khi ĐÁM XUYÊN mặt đất trong frame này (pos rơi từ trên xuống),
+            // hoặc đứng sát mặt đất (dung sai bậc 0.3m cho đi xuống dốc).
+            // Fix "gió thổi lên bục cao": không cho snap từ bên dưới đâm xuyên lên bậc cao.
+            const crossedSurface = gameState.player.pos[1] <= ground && prevY >= ground - 0.001;
+            const nearSurface = gameState.player.pos[1] <= ground && gameState.player.pos[1] >= ground - 0.31;
+            if (gameState.player.vel[1] <= 0 && (crossedSurface || nearSurface)) {
               gameState.player.pos[1] = ground;
               gameState.player.vel[1] = 0;
               gameState.player.vel[0] = 0;
@@ -2411,8 +2426,15 @@
               isWindWarning = true;
             } else if (night3WindTime >= 25.0 && night3WindTime < 30.0) {
               isWindGusting = true;
-              gameState.player.pos[0] += Math.cos(night3WindDir) * 2.2 * dt;
-              gameState.player.pos[2] += Math.sin(night3WindDir) * 2.2 * dt;
+              // Fix "gió thổi lên bục cao": gió chỉ đẩy ngang NẾU vị trí mới không bị chặn
+              // bởi tường bậc thang Đêm 3 (cùng logic với di chuyển thường, không xuyên tường).
+              const windDispX = Math.cos(night3WindDir) * 2.2 * dt;
+              const windDispZ = Math.sin(night3WindDir) * 2.2 * dt;
+              const p = gameState.player;
+              if (!isNight3WallBlocked(p.pos[1], p.pos[0] + windDispX, p.pos[2] + windDispZ)) {
+                p.pos[0] += windDispX;
+                p.pos[2] += windDispZ;
+              }
             }
           }
 

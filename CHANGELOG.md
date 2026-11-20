@@ -61,6 +61,17 @@ Tác giả: Chử Văn Hiệp (MSSV: 2A202603382) · Lớp: L3A
 
 ---
 
+## [hotfix-physics-v3b] — Sửa vật lý rơi khỏi mép & Gió xuyên bậc thang (Đêm 3)
+
+### 🐛 Sửa lỗi (view `src/web/index.html`)
+1. **"Bay ngang" khi bước ra khỏi mép bục cao**: trọng lực trong view chỉ áp dụng khi `!grounded || vel[1] !== 0` — khi bước ra mép mà trạng thái vẫn là chạm đất với vận tốc dọc 0 thì không bao giờ bắt đầu rơi (bấm Nhảy mới buộc rơi). Thêm phát hiện `walkedOffLedge` (đất dưới chân thấp hơn vị trí hiện tại) và `ground === null` (hết đất, kể cả mép đảo) → bắt đầu rơi ngay lập tức.
+2. **Gió thổi người chơi lên bậc cao hơn (Đêm 3)**: hai nguyên nhân cùng lúc — (a) luồng gió dịch chuyển vị trí bỏ qua bước chặn tường bậc thang; (b) điều kiện hạ cánh `pos[1] <= ground` cho phép "snap" từ bên dưới đâm xuyên lên bậc cao. Đã: tách logic chặn tường Đêm 3 thành hàm chung `isNight3WallBlocked()` dùng cho cả di chuyển thường và luồng gió; hạ cánh chỉ khi frame đó đâm xuyên mặt đất từ trên xuống (so sánh với vị trí frame trước, chống tunneling khi lag) hoặc đứng sát mặt đất (dung sai bậc 0.3 m dùng cho đi xuống dốc).
+
+### ⚠ Phạm vi
+- Core engine (`src/core/engine.js`) giữ nguyên hành vi contract (headless: di chuyển theo `getGround` snap-up tự do, không có khái niệm tường bậc thang) để không phá tính tất định/proofs đã niêm yết; 2 bug trên chỉ tồn tại trong 3D Web View.
+
+---
+
 ## [phase-3] — Ticket-03: Change Request "Đèn cạn dầu" (Contract v1.2)
 
 ### ⚠ Thay đổi Phá vỡ Tương thích (Breaking Changes)
