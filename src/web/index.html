@@ -704,11 +704,21 @@
           const nx = moveX / len;
           const nz = moveZ / len;
 
-          const worldX = nx * Math.cos(camYaw) + nz * Math.sin(camYaw);
-          const worldZ = -nx * Math.sin(camYaw) + nz * Math.cos(camYaw);
+          // In Three.js with camera positioned at -Z looking at +Z:
+          // Right on screen corresponds to -X in world coords
+          const worldX = -nx * Math.cos(camYaw) + nz * Math.sin(camYaw);
+          const worldZ = nx * Math.sin(camYaw) + nz * Math.cos(camYaw);
 
           gameState.player.pos.x += worldX * TUNING.player_speed * dt;
           gameState.player.pos.z += worldZ * TUNING.player_speed * dt;
+
+          // Island boundary clamping (radius 39m) to keep Mây on the island
+          const distFromCenter = Math.hypot(gameState.player.pos.x, gameState.player.pos.z);
+          const MAX_RADIUS = 39.0;
+          if (distFromCenter > MAX_RADIUS) {
+            gameState.player.pos.x = (gameState.player.pos.x / distFromCenter) * MAX_RADIUS;
+            gameState.player.pos.z = (gameState.player.pos.z / distFromCenter) * MAX_RADIUS;
+          }
 
           // Face moving direction
           mayGroup.rotation.y = Math.atan2(worldX, worldZ);

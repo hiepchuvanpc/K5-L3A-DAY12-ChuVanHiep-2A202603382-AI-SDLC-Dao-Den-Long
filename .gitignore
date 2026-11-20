@@ -3,4 +3,9 @@ node_modules/
 *.log
 .DS_Store
 Thumbs.db
+node_modules/
+.env
+*.log
+.DS_Store
+Thumbs.db
 CLAUDE-CODE-FABLE-5.2.txt
