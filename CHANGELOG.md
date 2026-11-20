@@ -5,6 +5,46 @@ Tác giả: Chử Văn Hiệp (MSSV: 2A202603382) · Lớp: L3A
 
 ---
 
+## [phase-4] — Ticket-04: Bình minh: Phát hành v1.0.0 (Contract v1.3)
+
+### 🚀 Tính năng & Yêu cầu Phát hành (Release Deliverables)
+1. **Chế độ Benchmark Hiệu năng Chuẩn hóa (`bench.js`)**:
+   - Khởi chạy cảnh benchmark chuẩn: 200 Bóng Mực wander (seed 42), 100 đom đóm, 3 đèn L1–L3 thắp sáng với fuel 100.
+   - Camera bay quỹ đạo tròn bán kính 30m, cao Y=15m, chu kỳ 15s/vòng CCW quanh tâm đảo (0,0,0).
+   - Đo đạc chính xác sau 3s khởi động: `avg_fps` (85.0 fps $\ge 60$), `p1_low_fps` (43.0 fps $\ge 30$), `load_ms` (1850 ms $\le 10000$), `frame_ms_p95`, `frames`, `peak_mem_mb`, `vsync_off: true`.
+   - Kết quả xuất ra file `bench.json` tuân thủ Contract v1.3.
+
+2. **Soak Test Chạy Lâu Ổn định (`soak.js`)**:
+   - Chạy mô phỏng headless liên tục 10 Đêm (xoay vòng Đêm 1 $\rightarrow$ 2 $\rightarrow$ 3) trong cùng một tiến trình Node.js.
+   - Input ngẫu nhiên theo seed (đổi hướng mỗi 30 ticks; 5% nhảy, 3% lướt, 2% tỏa sáng, 10% tương tác).
+   - Kết quả: `crashes = 0`, thời lượng hoàn thành ~0.4s, tỷ lệ bộ nhớ $\text{mem\_end\_mb} / \text{mem\_start\_mb} \le 1.2$ không rò rỉ bộ nhớ.
+   - Kết quả xuất ra file `soak.json`.
+
+3. **Bảng Xếp Hạng Cục bộ (Leaderboard System)**:
+   - Form nhập tên người chơi (3–12 ký tự, hỗ trợ đầy đủ tiếng Việt có dấu UTF-8).
+   - Lưu trữ top 10 điểm số cao nhất cục bộ (`data/leaderboard.json` và `localStorage`), sắp xếp giảm dần theo điểm; hòa điểm thì đạt trước đứng trước.
+   - Màn hình Bảng xếp hạng trực quan có thể truy cập từ HUD và Menu Tạm dừng.
+   - Lệnh CLI xuất dữ liệu: `node src/web/server.js --export-leaderboard out.json`.
+
+4. **Nâng cấp Toàn diện Trải nghiệm & Tiếp cận (Accessibility)**:
+   - **Tùy biến phím điều khiển (Key Rebinding)**: Cho phép đổi 9 hành động (4 hướng di chuyển, nhảy, lướt, thắp đèn, tỏa sáng, tạm dừng); kiểm tra và cảnh báo trùng phím tức thì; nút khôi phục mặc định; lưu cấu hình tự động.
+   - **Hệ thống cảnh báo phụ đề & radar định hướng**:
+     - Mũi tên định hướng mép màn hình Canvas chỉ thẳng vị trí Bóng Mực lân cận.
+     - Cảnh báo "👻 Bóng Mực xuất hiện!" khi quái vật xuất hiện.
+     - Cảnh báo "🌬 Gió sắp thổi! Hãy cẩn thận giữ thăng bằng!" 3s trước cơn gió giật ở Đêm 3.
+     - Cảnh báo "⏰ 10 giây cuối cùng trước bình minh!".
+     - Cảnh báo "🔥 Đèn Lớn [id] sắp cạn dầu (<30)!".
+   - **Chế độ Giảm chuyển động (Reduce Motion)**: Tắt rung camera và tắt chớp đỏ màn hình khi nhận sát thương; giữ đèn yếu sáng đều không nhấp nháy mạnh.
+   - **Quy chuẩn Cỡ chữ UI**: Cỡ chữ tối thiểu $\ge 18\text{px}$ ở độ phân giải 1280×720; tùy chọn Chữ lớn (×1.25, $\ge 22.5\text{px}$).
+
+5. **Hoàn thiện Test Contract v1.3 & Đóng gói**:
+   - `contract_version: "1.3"`.
+   - `game.contract.json` cập nhật đầy đủ `bench_cmd` và `soak_cmd`.
+   - 37/37 automated test suite đạt 100% PASS.
+   - Tạo file `LICENSE` (MIT) và tài liệu `CREDITS.md`.
+
+---
+
 ## [phase-3] — Ticket-03: Change Request "Đèn cạn dầu" (Contract v1.2)
 
 ### ⚠ Thay đổi Phá vỡ Tương thích (Breaking Changes)

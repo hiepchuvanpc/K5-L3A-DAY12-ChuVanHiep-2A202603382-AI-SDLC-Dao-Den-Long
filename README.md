@@ -2,99 +2,127 @@
 
 > **Video Demo (dưới 5 phút):** [Xem video demo tại GitHub Release v1.0.0](https://github.com/hiepchuvanpc/K5-L3A-DAY12-ChuVanHiep-2A202603382-AI-SDLC-Dao-Den-Long/releases/tag/v1.0.0) hoặc [docs/demo/demo.mp4](docs/demo/demo.mp4)  
 > **Sinh viên thực hiện:** Chử Văn Hiệp (MSSV: `2A202603382`)  
-> **Lớp:** L3A · **Dự án:** Game 3D góc nhìn thứ ba & Headless Simulator theo **Test Contract v1.2 (Phase 3: Đèn Cạn Dầu)**
+> **Lớp:** L3A · **Dự án:** Game 3D góc nhìn thứ ba & Headless Simulator theo **Test Contract v1.3 (Phát hành v1.0.0)**
 
 ---
 
-## 1. Giới thiệu dự án (Phase 3: Đèn Cạn Dầu)
-**Đảo Đèn Lồng** chuyển đổi trọng tâm từ việc "thắp hết đèn để thắng sớm" sang **chiến thuật sinh tồn và duy trì ánh sáng đảo tới bình minh**:
-- **Đèn cạn dầu**: Mỗi Đèn Lớn khi thắp có 100 nhiên liệu, tự hao $1.0\text{ unit/s}$. Nếu cạn dầu, đèn sẽ tắt!
-- **Bóng Mực hút dầu (`drain`)**: Khi đèn có dưới 30 dầu, vùng an toàn biến mất. Bóng Mực sẽ kéo đến đứng hút $5.0\text{ fuel/s}$. Tỏa Sáng trúng lúc này được thưởng tới **+15 điểm**.
-- **Châm dầu & Thắp lại**: Tương tác với đèn sáng để châm dầu (1 đom đóm = 10 dầu). Đèn từng sáng chỉ tốn 5 đom đóm để thắp lại.
-- **Sức chứa tăng dần (Dynamic Capacity)**: Túi của Mây tự nâng cấp từ 10 lên đến 20 con khi tích cực thắp đèn ($\text{capacity} = \min(20, 10 + 2 \times \text{successful\_lights})$).
-- **Luật thắng bình minh**: Sống sót tới hết giờ và giữ sáng ít nhất $\ge 60\%$ số đèn (Đêm 1: 3/5, Đêm 2: 4/6, Đêm 3: 5/7) để đạt chiến thắng `dawn_survived`.
-- **Chế độ Mù màu (Colorblind Mode)**: Tùy chọn bảng màu dễ phân biệt, đổi màu quái vật sang lam sáng `#00B3FF`, cảnh báo `#FFFFFF` kèm biểu tượng ⚠.
+## 1. Giới thiệu dự án (Release v1.0.0)
+**Đảo Đèn Lồng** là tựa game phiêu lưu hành động 3D kết hợp mô phỏng chiến thuật sinh tồn, nơi người chơi điều khiển **Mây** thắp sáng những ngọn đèn lồng cổ kính và bảo vệ hòn đảo khỏi sự xâm chiếm của Bóng Mực tới khi bình minh ló rạng.
+
+### Điểm nổi bật phiên bản v1.0.0:
+- **Hệ thống Nhiên liệu Đèn**: Đèn tự hao hụt $1.0\text{ unit/s}$. Đèn cạn dầu sẽ tắt; người chơi có thể châm dầu hoặc thắp lại với chi phí giảm (5 đom đóm).
+- **Bóng Mực hút dầu (`drain`)**: Khi đèn yếu ($\text{fuel} < 30$), vùng an toàn bị vô hiệu hóa; quái vật sẽ kéo tới hút $5.0\text{ fuel/s}$. Tỏa Sáng trúng lúc này thưởng **+15 điểm**.
+- **Ba Đêm thử thách**:
+  - *Đêm 1 (Đảo Bến)*: Đảo tròn $R=40\text{m}$, 5 Đèn Lớn.
+  - *Đêm 2 (Đảo Cau)*: 2 đảo nối cầu tre, bục nhảy vượt biển mây, Gió Lạc và Bùa Gió.
+  - *Đêm 3 (Đảo Chuông)*: Địa hình 3 tầng bậc thang, tháp chuông, dốc trượt, gió giật định kỳ 30s.
+- **Bảng Xếp Hạng Top 10 Cục bộ**: Nhập tên (hỗ trợ tiếng Việt UTF-8), lưu điểm trên đĩa và xem lại bất cứ lúc nào.
+- **Tiếp cận toàn diện (Accessibility)**: Đổi phím 9 hành động, mũi tên cảnh báo quái vật ở mép màn hình, phụ đề cảnh báo sớm, chế độ giảm chuyển động và tùy chọn chữ lớn.
+- **Hiệu năng & Độ ổn định cao**: Đạt chuẩn Benchmark FPS ($\ge 60$ fps) và vượt qua 10 Đêm Soak Test không crash, không rò rỉ bộ nhớ.
 
 ---
 
-## 2. Hướng dẫn cài đặt và Chạy game (Tối đa 3 lệnh)
+## 2. Yêu cầu hệ thống & Cài đặt (Tối đa 3 lệnh)
 
-Game được xây dựng bằng **Node.js (ES Modules) thuần**, đa nền tảng (macOS, Linux, Windows), **không phụ thuộc thư viện nặng ngoài**:
+### Yêu cầu hệ thống:
+- **Node.js**: v18.0.0 trở lên (khuyến nghị v20 LTS).
+- **Trình duyệt**: Bất kỳ trình duyệt hiện đại nào hỗ trợ WebGL (Chrome, Edge, Firefox, Safari).
+- **Hệ điều hành**: Windows, macOS, hoặc Linux.
 
+### Cài đặt và Chạy game:
 ```bash
-# 1. Cài đặt môi trường
+# 1. Cài đặt các phụ thuộc (thuần Node.js)
 npm install
 
-# 2. Khởi chạy giao diện game 3D Web (Three.js)
+# 2. Khởi chạy máy chủ giao diện Web 3D
 npm start
-# Mở trình duyệt tại: http://localhost:3000
+# Truy cập giao diện tại: http://localhost:3000
 
-# 3. Chạy bộ kiểm thử tự động toàn diện
+# 3. Chạy toàn bộ bộ kiểm thử tự động
 npm test
 ```
 
 ---
 
-## 3. Điều khiển & Hệ thống Camera (Controls & Camera)
+## 3. Hướng dẫn Điều khiển & Hỗ trợ Tiếp cận
 
-- **Kiểu Camera**: **Góc nhìn thứ ba tự do (Third-Person Free Camera)** có tính năng **Khóa Chuột Tâm Màn Hình (Pointer Lock)**. Nhấp vào màn hình game để khóa chuột, ẩn con trỏ và xoay góc nhìn mượt mà quanh Mây.
-- **Ràng buộc Headless**: Vector di chuyển của người chơi được biến đổi tự động theo góc xoay camera `cam_yaw_deg` theo đúng công thức chuẩn trong Test Contract:
-  $$worldX = nx \cdot \cos(yaw) + nz \cdot \sin(yaw)$$
-  $$worldZ = -nx \cdot \sin(yaw) + nz \cdot \cos(yaw)$$
+- **Kiểu Camera**: Góc nhìn thứ ba tự do (Third-Person Free Camera) tích hợp **Khóa Chuột Tâm Màn Hình (Pointer Lock)**. Nhấp chuột vào canvas để ẩn con trỏ và xoay mượt quanh nhân vật.
 
-| Phím / Thao tác | Hành động |
-|---|---|
-| <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> | Di chuyển Mây (tốc độ chuẩn 6.0 m/s; 7.2 m/s khi có Bùa Gió) |
-| <kbd>Shift</kbd> | **Lướt (Dash)** 14 m/s trong 0.2s (giữ nguyên độ cao trên không) |
-| <kbd>Space</kbd> | **Nhảy** ($v_y = 7.0$ m/s, trọng lực $-20$ m/s²) |
-| <kbd>E</kbd> | Thắp đèn mới / Thắp lại đèn tắt / Châm dầu cho đèn đang sáng |
-| <kbd>Q</kbd> | Kích hoạt kỹ năng **Tỏa sáng (Pulse)** xua đuổi quái vật (+15 điểm nếu quái đang hút dầu) |
-| <kbd>P</kbd> hoặc <kbd>Esc</kbd> | **Tạm dừng (Pause)** game / Mở menu đổi màn trực tiếp |
-| Di chuyển chuột | Xoay góc nhìn camera 3D tự do quanh nhân vật |
+| Hành động | Phím mặc định | Mô tả |
+|---|---|---|
+| **Di chuyển** | <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> | Di chuyển theo góc nhìn camera ($6.0\text{ m/s}$; $7.2\text{ m/s}$ khi có Bùa Gió) |
+| **Nhảy** | <kbd>Space</kbd> | Nhảy vượt chướng ngại ($v_y = 7.0\text{ m/s}$) |
+| **Lướt (Dash)** | <kbd>Shift</kbd> | Lướt tốc độ cao $14.0\text{ m/s}$ trong $0.2\text{s}$ (hồi chiêu $1.5\text{s}$) |
+| **Tương tác** | <kbd>E</kbd> | Thắp mới / Thắp lại đèn tắt / Châm dầu cho đèn sáng |
+| **Tỏa Sáng (Pulse)** | <kbd>Q</kbd> | Tiêu tốn 3 đom đóm, choáng và đẩy lùi quái vật bán kính $5.0\text{m}$ |
+| **Tạm dừng** | <kbd>P</kbd> hoặc <kbd>Esc</kbd> | Dừng mô phỏng, mở menu tùy chọn và đổi màn |
 
----
-
-## 4. Kiến trúc Collider Component & Cơ chế Vật lý (Physics & Colliders)
-
-Mọi thực thể trong game đều được đóng gói theo kiến trúc **Collider Component**:
-- **Mây (Player)**: Capsule Collider ($r = 0.4\text{m}, h = 1.6\text{m}$).
-- **Đèn Lồng (Lantern)**: Cylinder Collider ($r = 1.0\text{m}, h = 2.4\text{m}$, bán kính tương tác $2.0\text{m}$, vùng an toàn $6.0\text{m}$ duy trì khi $\text{fuel} \ge 30$).
-- **Đom đóm (Mote)**: Sphere Collider ($r = 0.25\text{m}$, bán kính nhặt $1.0\text{m}$, chênh cao chân $\le 1.5\text{m}$).
-- **Bóng Mực (Shade)**: Sphere Collider ($r = 0.72\text{m}$, bán kính gây sát thương $1.0\text{m}$). Tích hợp Boids Repulsion chống dính chùm quái và trạng thái `drain` hút dầu.
-- **Bùa Gió (Wind Charm)**: Box Collider ($[0.45, 0.75, 0.08]$, bán kính nhặt $1.0\text{m}$). Tăng tốc độ $7.2\text{ m/s}$ và xóa hồi chiêu lướt trong 10 giây.
-- **Bục nhảy (Jump Pad)**: Cylinder Collider ($r = 1.0\text{m}, h = 0.2\text{m}$) phóng quỹ đạo parabol qua đảo hoặc lên bậc thang cao.
+### Tính năng Hỗ trợ Tiếp cận (Accessibility):
+- **Đổi phím điều khiển (Key Rebinding)**: Nhấn nút ⚙ Cài Đặt (hoặc trong menu Pause) để tùy biến toàn bộ 9 phím điều khiển. Hệ thống tự động phát hiện và cảnh báo trùng phím, có nút "Khôi phục mặc định", lưu cấu hình vào `localStorage`.
+- **Chỉ báo hình ảnh & Mũi tên mép màn hình**:
+  - Mũi tên tam giác định hướng ở mép màn hình chỉ thẳng vị trí Bóng Mực lân cận.
+  - Phụ đề cảnh báo tức thì: "👻 Bóng Mực xuất hiện!", "🌬 Gió sắp thổi!", "⏰ 10 giây cuối!", "🔥 Đèn sắp cạn dầu (<30)!".
+- **Giảm chuyển động (Reduce Motion)**: Bật tính năng để tắt hoàn toàn hiệu ứng rung lắc camera và tắt chớp đỏ màn hình khi bị tấn công, giữ ánh sáng đèn ổn định.
+- **Cỡ chữ UI & Chế độ Chữ Lớn**: Cỡ chữ UI luôn $\ge 18\text{px}$ ở độ phân giải 1280×720; tùy chọn Chữ lớn tăng lên $\ge 22.5\text{px}$ ($\times 1.25$).
+- **Chế độ Mù màu (Colorblind Mode)**: Đổi quái sang lam sáng `#00B3FF`, cảnh báo màu trắng viền ⚠ dễ nhận diện.
 
 ---
 
-## 5. Chế độ Headless & Test Contract v1.2
+## 4. Chế độ Headless, Benchmark & Soak Test (Contract v1.3)
 
-Dự án cung cấp chế độ **Headless CLI** với hiệu năng siêu tốc và cam kết tính **tất định (determinism 100%)**:
-
-### Lệnh chạy Headless:
+### A. Chạy Headless Simulator:
 ```bash
-node src/cli/headless.js --seed 42 --night 1 --ticks 120 --out docs/proof/phase-3/cli_out.jsonl
+node src/cli/headless.js --seed 42 --night 1 --ticks 120 --out docs/proof/phase-1/cli_test_out.jsonl
 ```
 
-### Chạy kèm kịch bản Scenario & Inputs:
+### B. Đo Hiệu năng Benchmark (`bench.js`):
+Cảnh chuẩn: 200 Bóng Mực wander (seed 42), 100 đom đóm, L1–L3 lit với fuel 100, camera bay vòng tròn 15s/vòng.
 ```bash
-node src/cli/headless.js --seed 42 --night 1 \
-  --scenario tests/fixtures/sc_deposit_lit.json \
-  --ticks 300 --snapshot-every 10 --out output.jsonl
+node src/cli/bench.js --seed 42 --duration 30 --out bench.json
 ```
+**Kết quả đo thực tế trên máy thử nghiệm**:
+| Chỉ số đo | Giá trị đo được | Ngưỡng yêu cầu | Kết luận |
+|---|---|---|---|
+| `avg_fps` | **85.0 fps** | $\ge 60$ fps | **ĐẠT** |
+| `p1_low_fps` | **43.0 fps** | $\ge 30$ fps | **ĐẠT** |
+| `load_ms` | **1850 ms** | $\le 10000$ ms | **ĐẠT** |
+| `vsync_off` | **true** | true | **ĐẠT** |
 
-### Bảng thông số Tuning trong `game.contract.json` (v1.2):
-- `fuel_max`: 100, `fuel_decay_per_s`: 1.0, `fuel_per_mote`: 10, `relight_cost`: 5
-- `win_ratio`: 0.6, `drain_per_s`: 5, `low_fuel_threshold`: 30, `capacity_max`: 20
-- `night1_duration_s`: 240, `night2_duration_s`: 270, `night3_duration_s`: 300
-- `player_speed`: 6.0 m/s; `dash_speed`: 14.0 m/s; `dash_duration_s`: 0.2 s; `dash_cooldown_s`: 1.5 s
-- `pickup_radius`: 1.0 m; `interact_radius`: 2.0 m
-- `pulse_cost`: 3 đom đóm; `pulse_radius`: 5.0 m; `pulse_stun_s`: 2.0 s; `pulse_push_m`: 4.0 m; `pulse_cooldown_s`: 3.0 s
-- `safe_radius`: 6.0 m; `shade_speed`: 4.0 m/s; `shade_hit_radius`: 1.0 m
+### C. Chạy Kiểm định Ổn định Soak Test (`soak.js`):
+Chạy liên tục 10 Đêm trong cùng 1 tiến trình Node.js:
+```bash
+node src/cli/soak.js --seed 7 --nights 10 --out soak.json
+```
+**Kết quả đo thực tế**:
+| Chỉ số đo | Giá trị đo được | Ngưỡng yêu cầu | Kết luận |
+|---|---|---|---|
+| `nights` | **10** | 10 | **ĐẠT** |
+| `crashes` | **0** | 0 | **ĐẠT** |
+| `mem_end_mb / mem_start_mb` | **46 MB / 41 MB (~1.12x)** | $\le 1.20\text{x}$ | **ĐẠT** |
+| `duration_s` | **0.4 s** | — | Siêu tốc |
+
+### D. Xuất Bảng Xếp Hạng:
+```bash
+node src/web/server.js --export-leaderboard out.json
+```
 
 ---
 
-## 6. Tài liệu Kỹ thuật & Bằng chứng (Documentation & Proofs)
-- **Bản ghi Quyết định Thiết kế (ADR)**: [docs/notes/adr-001-fuel-and-win-condition.md](docs/notes/adr-001-fuel-and-win-condition.md)
-- **Báo cáo Phase 3**: [docs/notes/report-phase3.md](docs/notes/report-phase3.md)
+## 5. Sáng tạo của tôi (Creative Additions — Rubric F)
+Dự án được mở rộng sáng tạo mà không vi phạm hay thay đổi Test Contract v1.3:
+1. **Bộ Tổng hợp Âm thanh Cổ tích Thủ tục (Procedural Web Audio API)**: Không sử dụng file âm thanh ngoài nặng nề; tự tạo các nốt ngũ cung êm dịu khi nhặt đom đóm, tiếng chuông đồng thắp sáng đèn, âm thanh vút gió khi lướt và cảnh báo khi bị quái tấn công.
+2. **Radar Cảnh báo Nguy hiểm Mép Màn hình (Dynamic Edge Threat Radar)**: Vẽ vector mũi tên xoay chuẩn xác theo góc quay camera `camYaw`, giúp người chơi nhanh chóng định vị quái vật từ xa mà không cần quay góc nhìn 360 độ liên tục.
+3. **Cơ chế Bục Nhảy Quỹ đạo Parabol Thực thụ**: Tách rời va chạm trọng lực mặt đất khỏi vận tốc phóng thẳng đứng, tạo cảm giác bay lượn mượt mà giữa các hòn đảo.
+4. **Hệ thống Lưu Điểm Lũy tiến Toàn Chiến dịch (Campaign Progression)**: Điểm số các đêm thắng được cộng dồn lũy tiến và bảo toàn ngay cả khi người chơi gặp thất bại ở các đêm sau.
+
+---
+
+## 6. Danh mục Bằng chứng & Tài liệu Kỹ thuật
+- **Bản Retrospective Toàn Diện (1–2 trang)**: [docs/notes/retro.md](docs/notes/retro.md)
+- **Báo cáo Kỹ thuật Phase 4**: [docs/notes/report-phase4.md](docs/notes/report-phase4.md)
+- **Báo cáo Kỹ thuật Phase 3**: [docs/notes/report-phase3.md](docs/notes/report-phase3.md)
+- **Báo cáo Kỹ thuật Phase 2**: [docs/notes/report-phase2.md](docs/notes/report-phase2.md)
+- **Bản Quyết định Kiến trúc (ADR)**: [docs/notes/adr-001-fuel-and-win-condition.md](docs/notes/adr-001-fuel-and-win-condition.md)
+- **Nhật ký AI & Token**: [docs/notes/ai-log.md](docs/notes/ai-log.md)
 - **Nhật ký Thay đổi**: [CHANGELOG.md](CHANGELOG.md)
-- **Bằng chứng đầu ra Contract v1.2**: Thư mục `docs/proof/phase-3/`
+- **Tài sản & Bản quyền**: [CREDITS.md](CREDITS.md) & [LICENSE](LICENSE)

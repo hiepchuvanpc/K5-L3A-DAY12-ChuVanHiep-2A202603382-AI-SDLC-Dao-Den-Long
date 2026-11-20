@@ -1,0 +1,74 @@
+{
+  "entries": [
+    {
+      "name": "CloudKeeper",
+      "score": 1420,
+      "nights_won": 3,
+      "achieved_at": "2026-11-20T10:15:30.000Z",
+      "seed": 42
+    },
+    {
+      "name": "MayGiuDen",
+      "score": 1280,
+      "nights_won": 3,
+      "achieved_at": "2026-11-20T11:20:00.000Z",
+      "seed": 99
+    },
+    {
+      "name": "DaoDenLong",
+      "score": 1150,
+      "nights_won": 2,
+      "achieved_at": "2026-11-20T12:05:12.000Z",
+      "seed": 7
+    },
+    {
+      "name": "AnhSangVang",
+      "score": 980,
+      "nights_won": 2,
+      "achieved_at": "2026-11-20T13:30:45.000Z",
+      "seed": 15
+    },
+    {
+      "name": "BinhMinh",
+      "score": 850,
+      "nights_won": 2,
+      "achieved_at": "2026-11-20T14:10:00.000Z",
+      "seed": 23
+    },
+    {
+      "name": "BuaGio",
+      "score": 720,
+      "nights_won": 1,
+      "achieved_at": "2026-11-20T14:45:20.000Z",
+      "seed": 101
+    },
+    {
+      "name": "NonLaMay",
+      "score": 640,
+      "nights_won": 1,
+      "achieved_at": "2026-11-20T15:00:10.000Z",
+      "seed": 33
+    },
+    {
+      "name": "SuongDem",
+      "score": 520,
+      "nights_won": 1,
+      "achieved_at": "2026-11-20T15:20:30.000Z",
+      "seed": 77
+    },
+    {
+      "name": "GioLac",
+      "score": 410,
+      "nights_won": 1,
+      "achieved_at": "2026-11-20T15:40:00.000Z",
+      "seed": 88
+    },
+    {
+      "name": "TapSu",
+      "score": 250,
+      "nights_won": 0,
+      "achieved_at": "2026-11-20T16:00:00.000Z",
+      "seed": 1
+    }
+  ]
+}
