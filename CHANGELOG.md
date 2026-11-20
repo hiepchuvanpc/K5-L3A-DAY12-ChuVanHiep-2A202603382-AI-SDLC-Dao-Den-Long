@@ -5,6 +5,23 @@ Tác giả: Chử Văn Hiệp (MSSV: 2A202603382) · Lớp: L3A
 
 ---
 
+## [hotfix-visuals-v4] — Playtest vòng 2: FX gió/lướt, nhân vật, chướng ngại vật, spawn cân bằng
+
+### 🐛 Sửa lỗi (toàn bộ ở view `src/web/index.html`, không đổi Core)
+1. **Địa hình Đêm 3 chưa "đặc"**: rãnh `r ∈ [8, 12]` quanh tháp chuông khiến người chơi nhảy bậc có thể xuyên xuống và rơi. `getGround` Tier 1 đổi từ `r >= 12` thành `r >= 8` (lấp đầy rãnh); mesh bán khuyên Tier 1 đổi bán kính trong 12→8 cho khớp.
+2. **Tỏa Sáng (Q) đẩy Bóng Mực ra khỏi đảo**: khi điểm đẩy rơi ngoài map (biến mất quái) thì lùi từng bước 0,25m để Bóng Mực luôn nằm trên mặt đất hợp lệ (`getGround() !== null`).
+3. **Đom đóm spawn dồn cụm một chỗ**: thay spawn ngẫu nhiên bằng lưới điểm đều theo từng đêm (`getMoteSpawnPointsFor`, có cả tầng y=3/y=6 ở Đêm 3); respawn định kỳ chỉ chọn điểm lưới trống, cách đom đóm hiện có < 2m, đủ xa người chơi.
+
+### ✨ Tính năng & Đồ họa mới
+4. **Animation Gió + cảnh báo hướng gió (Đêm 3)**: các vệt gió xanh (`glowStreaks`) lao qua người chơi trong cơn giật; động cơ mây trôi chậm; phụ đề gió kèm hướng ("về trước mặt / bên trái / bên phải / sau lưng") so với camera; mũi tên gió hình chữ >> nhấp nháy trên threat radar đúng hướng màn hình (giảm tắt nháy ở chế độ Reduce Motion).
+5. **Model nhân vật chính Mây**: mũ nón lá, khăn quàng + áo choàng sau lưng, 2 tầng áo choàng, đai vàng, 2 tay vung theo bước chân, đèn lồng mang theo có khung; dập dềnh khi chạy, nghiêng người khi lướt.
+6. **Animation Lướt**: vệt gió vàng phía sau trong lúc dash + nghiêng thân nhân vật; radar hiển thị hướng dash.
+7. **Vật thể Đặc cản đường**: cột đèn lồng, đá, cây, tháp chuông có bán kính va chạm (`solidProps` + `resolveSolidCollision`), áp cả sau khi gió đẩy để không bị xuyên; bổ sung đá, cột đèn, cây low-poly cho Đêm 3 bớt trống trải (bỏ qua trong bench mode).
+8. **Bóng Mực spawn xa hơn lúc đầu trận**: điểm spawn khởi đầu ≥ 18m theo vòng mép đảo mỗi đêm (`getShadeSpawnPointsFor`); thêm spawn định kỳ (7s N1/N2, 6s N3, tối đa 6/8/10) luôn ≥ 15m kèm phụ đề "👻 Bóng Mực xuất hiện!".
+9. **Đếm ngược 3-2-1 trước khi chơi**: màn hình đếm ngược toàn màn hình (900ms/số, âm báo từng bước), thế giới tạm dừng trong lúc đếm; tự hủy khi về Menu chính.
+
+---
+
 ## [hotfix-ui-v3] — Sửa lỗi playtest Đêm 3 + Giao diện UI v3
 
 ### 🐛 Sửa lỗi

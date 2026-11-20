@@ -365,6 +365,23 @@
     }
     body.reduce-motion .intro-lantern, body.reduce-motion #btn-intro-start { animation: none; }
 
+    /* ===== Countdown screen ===== */
+    .cd-num {
+      font-size: 130px;
+      font-weight: 900;
+      color: #F2C14E;
+      text-shadow: 0 0 60px rgba(242, 193, 78, 0.65);
+      animation: cdPop 0.9s ease-in-out infinite;
+      line-height: 1;
+    }
+    @keyframes cdPop {
+      0% { transform: scale(1.6); opacity: 0.35; }
+      35% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(0.92); opacity: 0.85; }
+    }
+    .cd-label { margin-top: 14px; font-size: 16px; letter-spacing: 4px; color: #AAB8D8; text-transform: uppercase; }
+    body.reduce-motion .cd-num { animation: none; }
+
     /* ===== Main menu ===== */
     .menu-night-cards {
       display: flex;
@@ -598,6 +615,12 @@
     </div>
   </div>
 
+  <!-- Countdown screen (đếm ngược trước khi chơi) -->
+  <div class="modal-screen" id="countdown-screen" style="background: rgba(11, 15, 40, 0.55); backdrop-filter: none;">
+    <div class="cd-num" id="countdown-num">3</div>
+    <div class="cd-label">MÂY THỨC GIẤC — HÃY CHUẨN BỊ GIỮ ĐÈN</div>
+  </div>
+
   <!-- Pause Modal -->
   <div class="modal-screen" id="pause-screen">
     <h2 class="modal-title">TẠM DỪNG</h2>
@@ -814,7 +837,9 @@
           const r = Math.hypot(x, z);
           if (r > 45.0) return null;
           if (r <= 8.0) return 6.0;
-          if (r >= 12.0 && r <= 24.0 && z > 0) return 3.0;
+          // Tier 1: bán khuyên r 8..24 phía z>0 — đất ĐẶC liên tục với tháp chuông
+          // (bỏ hào nước r 12 cũ: trước đây nhảy gần bậc rơi chân qua khe và kẹt dưới hào)
+          if (r >= 8.0 && r <= 24.0 && z > 0) return 3.0;
           if (r >= 24.0 && r <= 30.0) {
             const checkR = (deg) => {
               const rad = (deg * Math.PI) / 180;
@@ -924,6 +949,7 @@
     let shadeAlertTimer = 0;
     let night3WindTime = 0;
     let night3WindDir = Math.PI / 4;
+    let windRelScreenAngle = null; // góc hướng gió so với camera (vẽ mũi tên cảnh báo trên radar)
     let campaignScore = 0;
     let campaignNightsWon = 0;
     let gameState = {
@@ -998,41 +1024,104 @@
     moonLight.position.set(40, 70, -30);
     scene.add(moonLight);
 
-    // Mây (Player Character)
+    // Mây (Player Character) — model đầy đủ: áo choàng, mũ nón, khăn, tay cầm đèn
     const mayGroup = new THREE.Group();
     scene.add(mayGroup);
 
-    const mayBody = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.35, 0.42, 1.1, 14),
-      new THREE.MeshStandardMaterial({ color: 0x3A6073, roughness: 0.6 })
-    );
-    mayBody.position.y = 0.55;
-    mayGroup.add(mayBody);
+    const matRobe = new THREE.MeshStandardMaterial({ color: 0x3A6073, roughness: 0.65 });
+    const matRobeDark = new THREE.MeshStandardMaterial({ color: 0x2C4A5C, roughness: 0.7 });
+    const matGold = new THREE.MeshStandardMaterial({ color: 0xC9A227, roughness: 0.35, metalness: 0.5 });
+    const matSkin = new THREE.MeshStandardMaterial({ color: 0xFAD0C4, roughness: 0.8 });
+    const matStraw = new THREE.MeshStandardMaterial({ color: 0xD4A373, roughness: 0.75, flatShading: true });
+    const matCloth = new THREE.MeshStandardMaterial({ color: 0xC8102E, roughness: 0.8 });
 
-    const mayHead = new THREE.Mesh(
-      new THREE.SphereGeometry(0.28, 14, 14),
-      new THREE.MeshStandardMaterial({ color: 0xFAD0C4 })
-    );
+    // Chân váy choàng (2 lớp)
+    const mayBody = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.52, 1.0, 14), matRobe);
+    mayBody.position.y = 0.5;
+    mayGroup.add(mayBody);
+    const maySkirt = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.62, 0.35, 14), matRobeDark);
+    maySkirt.position.y = 0.18;
+    mayGroup.add(maySkirt);
+
+    // Đai lưng vàng
+    const belt = new THREE.Mesh(new THREE.TorusGeometry(0.365, 0.045, 8, 20), matGold);
+    belt.rotation.x = Math.PI / 2;
+    belt.position.y = 0.78;
+    mayGroup.add(belt);
+
+    // Cánh áo choàng phía sau
+    const cape = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.55, 0.7, 14, 1, true, Math.PI * 0.6, Math.PI * 0.8), matRobeDark);
+    cape.material.side = THREE.DoubleSide;
+    cape.position.set(0, 0.85, -0.12);
+    mayGroup.add(cape);
+
+    // Đầu + khuôn mặt
+    const mayHead = new THREE.Mesh(new THREE.SphereGeometry(0.28, 16, 14), matSkin);
     mayHead.position.y = 1.25;
     mayGroup.add(mayHead);
+    const eyeGeo = new THREE.SphereGeometry(0.035, 8, 8);
+    const eyeMat = new THREE.MeshBasicMaterial({ color: 0x222A35 });
+    const faceEyeL = new THREE.Mesh(eyeGeo, eyeMat);
+    faceEyeL.position.set(-0.09, 1.28, 0.25);
+    mayGroup.add(faceEyeL);
+    const faceEyeR = new THREE.Mesh(eyeGeo, eyeMat);
+    faceEyeR.position.set(0.09, 1.28, 0.25);
+    mayGroup.add(faceEyeR);
 
-    const hat = new THREE.Mesh(
-      new THREE.ConeGeometry(0.72, 0.45, 20),
-      new THREE.MeshStandardMaterial({ color: 0xD4A373, roughness: 0.7 })
-    );
-    hat.position.y = 1.48;
+    // Khăn quàng đỏ
+    const scarf = new THREE.Mesh(new THREE.TorusGeometry(0.17, 0.06, 8, 16), matCloth);
+    scarf.rotation.x = Math.PI / 2;
+    scarf.position.y = 1.03;
+    mayGroup.add(scarf);
+
+    // Nón lá: vành rộng + chóp + núm
+    const hatBrim = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.68, 0.05, 22), matStraw);
+    hatBrim.position.y = 1.44;
+    mayGroup.add(hatBrim);
+    const hat = new THREE.Mesh(new THREE.ConeGeometry(0.6, 0.38, 22), matStraw);
+    hat.position.y = 1.62;
     mayGroup.add(hat);
+    const hatKnob = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 8), matGold);
+    hatKnob.position.y = 1.82;
+    mayGroup.add(hatKnob);
 
+    // 2 tay (để vung khi chạy); tay phải cầm đèn
+    const matArm = new THREE.MeshStandardMaterial({ color: 0x34566B, roughness: 0.7 });
+    const mayArmL = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.06, 0.55, 8), matArm);
+    mayArmL.position.set(-0.42, 0.85, 0.05);
+    mayArmL.rotation.z = 0.5;
+    mayGroup.add(mayArmL);
+    const mayArmR = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.06, 0.55, 8), matArm);
+    mayArmR.position.set(0.42, 0.85, 0.05);
+    mayArmR.rotation.z = -0.5;
+    mayGroup.add(mayArmR);
+
+    // Đèn lồng trên tay phải: khung vanh + ruột sáng
+    const mayLanternGroup = new THREE.Group();
+    mayLanternGroup.position.set(0.56, 1.1, 0.22);
+    const lanternFrameTop = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.03, 10), matGold);
+    lanternFrameTop.position.y = 0.13;
+    mayLanternGroup.add(lanternFrameTop);
+    const lanternFrameBot = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.03, 10), matGold);
+    lanternFrameBot.position.y = -0.13;
+    mayLanternGroup.add(lanternFrameBot);
     const mayLantern = new THREE.Mesh(
-      new THREE.SphereGeometry(0.12, 10, 10),
-      new THREE.MeshStandardMaterial({ color: 0xFFFBE6, emissive: 0xF2C14E, emissiveIntensity: 1.5 })
+      new THREE.SphereGeometry(0.12, 12, 12),
+      new THREE.MeshStandardMaterial({ color: 0xFFFBE6, emissive: 0xF2C14E, emissiveIntensity: 1.6 })
     );
-    mayLantern.position.set(0.48, 1.28, 0.15);
-    mayGroup.add(mayLantern);
+    mayLantern.scale.y = 1.35;
+    mayLanternGroup.add(mayLantern);
+    mayGroup.add(mayLanternGroup);
 
     const mayLight = new THREE.PointLight(0xF2C14E, 1.2, 8.0);
-    mayLight.position.set(0.48, 1.28, 0.15);
+    mayLight.position.copy(mayLanternGroup.position);
     mayGroup.add(mayLight);
+
+    // Danh sách bộ phận phục vụ hoạt ảnh bước đi / lướt
+    const mayParts = { armL: mayArmL, armR: mayArmR, body: mayBody, head: mayHead, lantern: mayLanternGroup, cape };
+    let mayWalkPhase = 0;
+    let mayIsMoving = false;
+    let mayDashLean = 0;
 
     const pulseMesh = new THREE.Mesh(
       new THREE.SphereGeometry(5.0, 24, 12),
@@ -1092,8 +1181,73 @@
       }
     }
 
+    // ---- Pool vệt tốc độ (animation Lướt + Gió) ----
+    const glowStreaks = [];
+    if (!isBenchMode) {
+      const streakGeo = new THREE.BoxGeometry(0.06, 0.06, 1.1);
+      for (let i = 0; i < 20; i++) {
+        const m = new THREE.Mesh(streakGeo, new THREE.MeshBasicMaterial({ color: 0xFFE9A8, transparent: true, opacity: 0, fog: false }));
+        m.visible = false;
+        scene.add(m);
+        glowStreaks.push({ mesh: m, life: 0, vx: 0, vy: 0, vz: 0 });
+      }
+    }
+    // Văng 1 vệt tốc độ: (x,y,z) vị trí, (dx,dz) hướng bay, màu, tốc độ trôi
+    function spawnStreak(x, y, z, dx, dz, color, speed) {
+      const s = glowStreaks.find(st => st.life <= 0);
+      if (!s) return;
+      s.mesh.visible = true;
+      s.mesh.material.color.setHex(color);
+      s.mesh.material.opacity = 0.75;
+      s.mesh.position.set(x, y, z);
+      s.mesh.rotation.y = Math.atan2(dx, dz);
+      s.life = 0.32;
+      s.vx = dx * speed;
+      s.vy = 0;
+      s.vz = dz * speed;
+    }
+
+    // ---- Mây nổi trên trời (drift chậm) ----
+    const cloudMeshes = [];
+    if (!isBenchMode) {
+      const cloudMat = new THREE.MeshBasicMaterial({ color: 0xAABBDD, transparent: true, opacity: 0.32, fog: false });
+      for (let i = 0; i < 6; i++) {
+        const cg = new THREE.Group();
+        for (let j = 0; j < 3; j++) {
+          const puff = new THREE.Mesh(new THREE.SphereGeometry(3.5 + Math.random() * 3, 8, 8), cloudMat);
+          puff.position.set((j - 1) * 4 + Math.random() * 2, Math.random() * 1.4, Math.random() * 2);
+          puff.scale.y = 0.55;
+          cg.add(puff);
+        }
+        const a = Math.random() * Math.PI * 2;
+        const r = 60 + Math.random() * 70;
+        cg.position.set(r * Math.cos(a), 22 + Math.random() * 12, r * Math.sin(a));
+        cg.userData.spin = 0.004 + Math.random() * 0.006;
+        scene.add(cg);
+        cloudMeshes.push(cg);
+      }
+    }
+
     let seaMesh = null;
     let mistMesh = null;
+
+    // Vật thể ĐẶC chặn đường đi: danh sách { x, z, r } đăng ký khi dựng cảnh
+    let solidProps = [];
+
+    // Đẩy người chơi ra ngoài vật nếu chạm vào thể tích của nó
+    function resolveSolidCollision(p) {
+      for (const sp of solidProps) {
+        const dx = p.pos[0] - sp.x;
+        const dz = p.pos[2] - sp.z;
+        const d = Math.hypot(dx, dz);
+        const minD = sp.r + 0.32;
+        if (d < minD && d > 0.0001) {
+          const push = minD - d;
+          p.pos[0] += (dx / d) * push;
+          p.pos[2] += (dz / d) * push;
+        }
+      }
+    }
 
     // Helper: chấm điểm ngẫu nhiên trên mặt đất, tránh đèn/bục nhảy/bùa
     function scatterProps(nightNum, count, minR, maxR, cb) {
@@ -1240,6 +1394,8 @@
       shadeMeshes = [];
       drifterMeshes = [];
       charmMeshes = [];
+      solidProps = [];      // vật thể đặc chặn đường (thân cây, đá, cột đèn, tháp)
+      moteSpawnPoints = getMoteSpawnPointsFor(nightNum);
 
       document.getElementById('island-title').innerText = `ĐẢO ĐÈN LỒNG — ĐÊM ${nightNum}`;
       document.getElementById('island-subtitle').innerText = `${map.name} · Người giữ đèn Mây`;
@@ -1267,11 +1423,11 @@
         t0.position.set(0, -2, 0);
         envGroup.add(t0);
 
-        // Tier 1 Half-Ring — khớp getGround: bán khuyên r∈[12,24] phía z>0, mặt đi lại ở Y=3
-        // (rotation.x = +PI/2 để mặt phẳng shape nằm ngang ở y=3, phần đùn dày 3 đi XUỐNG tới y=0)
+        // Tier 1 Half-Ring — khớp getGround: bán khuyên r∈[8,24] phía z>0, mặt đi lại ở Y=3
+        // (bán kính trong 8: đất liền kề tháp chuông, khớp getGround mới, không còn khe hở)
         const shape = new THREE.Shape();
         shape.absarc(0, 0, 24, 0, Math.PI, false);
-        shape.absarc(0, 0, 12, Math.PI, 0, true);
+        shape.absarc(0, 0, 8, Math.PI, 0, true);
         const extrudeGeom = new THREE.ExtrudeGeometry(shape, { depth: 3, bevelEnabled: false, curveSegments: 16 });
         const t1 = new THREE.Mesh(extrudeGeom, new THREE.MeshStandardMaterial({ color: 0x2F5D50 }));
         t1.rotation.x = Math.PI / 2;
@@ -1287,6 +1443,8 @@
         const tower = new THREE.Mesh(new THREE.CylinderGeometry(2, 2.2, 8, 16), new THREE.MeshStandardMaterial({ color: 0x6B4A2F }));
         tower.position.set(0, 10, 0);
         envGroup.add(tower);
+        // Tháp chuông là vật đặc
+        solidProps.push({ x: 0, z: 0, r: 2.3 });
 
         // Ramps — khớp getGround: dốc chạy XUYẾN BÁN KÍNH ở góc 30° và 150°
         // (chân dốc r=30, Y=0 → đỉnh r=24, Y=3). Dùng Euler 'YXZ': nghiêng trước, quayYaw sau.
@@ -1352,6 +1510,8 @@
 
         envGroup.add(g);
         lanternMeshes.push({ id: l.id, data: l, group: g, bulb, light });
+        // Cột đèn là vật đặc chặn đường
+        solidProps.push({ x: l.pos[0], z: l.pos[2], r: 1.0 });
       });
 
       // Charms
@@ -1400,18 +1560,79 @@
         envGroup.add(mistMesh);
 
         const leafPalettes = [[0x2E7D5B, 0x3A9169, 0x276B4C], [0x4C8C3F, 0x5FA34D, 0x3E7A35]];
-        scatterProps(nightNum, nightNum === 2 ? 14 : 12, 9, nightNum === 3 ? 43 : 36, (x, y, z) => {
-          addTree(envGroup, x, y, z, 0.9 + Math.random() * 0.8, leafPalettes[Math.floor(Math.random() * 2)]);
+        // Cây — vật ĐẶC (đăng ký va chạm thân cây)
+        scatterProps(nightNum, nightNum === 2 ? 18 : 16, 9, nightNum === 3 ? 43 : 36, (x, y, z) => {
+          const s = 0.9 + Math.random() * 0.8;
+          addTree(envGroup, x, y, z, s, leafPalettes[Math.floor(Math.random() * 2)]);
+          solidProps.push({ x, z, r: 0.22 * s + 0.15 });
         });
-        scatterProps(nightNum, 9, 9, nightNum === 3 ? 42 : 36, (x, y, z) => {
+        // Đá — vật ĐẶC
+        scatterProps(nightNum, 11, 9, nightNum === 3 ? 42 : 36, (x, y, z) => {
+          const rr = 0.35 + Math.random() * 0.5;
           const rock = new THREE.Mesh(
-            new THREE.DodecahedronGeometry(0.35 + Math.random() * 0.5, 0),
+            new THREE.DodecahedronGeometry(rr, 0),
             new THREE.MeshStandardMaterial({ color: 0x6E7686, roughness: 0.95, flatShading: true })
           );
           rock.position.set(x, y + 0.15, z);
           rock.rotation.set(Math.random() * 3, Math.random() * 3, Math.random() * 3);
           envGroup.add(rock);
+          solidProps.push({ x, z, r: rr * 0.85 });
         });
+        // Bụi cây tròn ký (không chặn, trang trí)
+        scatterProps(nightNum, 9, 9, nightNum === 3 ? 42 : 36, (x, y, z) => {
+          const bush = new THREE.Group();
+          for (let j = 0; j < 3; j++) {
+            const puff = new THREE.Mesh(
+              new THREE.SphereGeometry(0.22 + Math.random() * 0.2, 7, 7),
+              new THREE.MeshStandardMaterial({ color: 0x3E8E5A, roughness: 0.9, flatShading: true })
+            );
+            puff.position.set((j - 1) * 0.3 + Math.random() * 0.1, 0.16 + Math.random() * 0.12, Math.random() * 0.25 - 0.12);
+            bush.add(puff);
+          }
+          bush.position.set(x, y, z);
+          envGroup.add(bush);
+        });
+        // Hoa dại nhỏ màu về đêm (trang trí)
+        const flowerColors = [0xF2C14E, 0xE86AA6, 0x8EC6F2, 0xB79CF2];
+        scatterProps(nightNum, 12, 9, nightNum === 3 ? 42 : 36, (x, y, z) => {
+          const fl = new THREE.Group();
+          const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.02, 0.24, 5), new THREE.MeshStandardMaterial({ color: 0x3E7A45 }));
+          stem.position.y = 0.12;
+          fl.add(stem);
+          const head = new THREE.Mesh(
+            new THREE.SphereGeometry(0.05, 6, 6),
+            undefined
+          );
+          const fc = flowerColors[Math.floor(Math.random() * flowerColors.length)];
+          head.material = new THREE.MeshStandardMaterial({ color: fc, emissive: fc, emissiveIntensity: 0.5 });
+          head.position.y = 0.26;
+          fl.add(head);
+          fl.position.set(x, y, z);
+          envGroup.add(fl);
+        });
+        // Đèn đá cổ dọc lối đi (Đêm 3: quanh vòng ngoài, tránh 2 dốc) — vật ĐẶC
+        if (nightNum === 3) {
+          [60, 120, 240, 300].forEach(deg => {
+            const a = (deg * Math.PI) / 180;
+            const x = 32 * Math.cos(a), z = 32 * Math.sin(a);
+            const g = new THREE.Group();
+            const post = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.16, 1.0, 8), new THREE.MeshStandardMaterial({ color: 0x7C8494, roughness: 0.9, flatShading: true }));
+            post.position.y = 0.5;
+            g.add(post);
+            const cap = new THREE.Mesh(new THREE.ConeGeometry(0.28, 0.2, 8), new THREE.MeshStandardMaterial({ color: 0x7C8494, roughness: 0.9, flatShading: true }));
+            cap.position.y = 1.1;
+            g.add(cap);
+            const gem = new THREE.Mesh(
+              new THREE.SphereGeometry(0.08, 8, 8),
+              new THREE.MeshStandardMaterial({ color: 0xFFF3CC, emissive: 0xF2C14E, emissiveIntensity: 1.4 })
+            );
+            gem.position.y = 0.95;
+            g.add(gem);
+            g.position.set(x, 0, z);
+            envGroup.add(g);
+            solidProps.push({ x, z, r: 0.3 });
+          });
+        }
 
         // Vòng sáng vàng quanh chân Đèn Lớn
         gameState.lanterns.forEach(l => {
@@ -1470,19 +1691,21 @@
           gameState.shades.push(sObj);
         }
       } else {
-        for (let i = 0; i < 20; i++) {
-          const pos = getRandomGroundPos(nightNum);
-          gameState.motes.push(createMote(`M${i+1}`, pos));
+        // Đom đóm rải ĐỀU theo lưới điểm spawn cố định (rìa + giữa, đủ các tầng) — hết cảnh cụm 1 chỗ
+        const motePts = [...moteSpawnPoints];
+        for (let i = motePts.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [motePts[i], motePts[j]] = [motePts[j], motePts[i]];
+        }
+        for (let i = 0; i < Math.min(20, motePts.length); i++) {
+          gameState.motes.push(createMote(`M${i+1}`, [motePts[i][0], motePts[i][1] ?? 0, motePts[i][2]]));
         }
 
-        for (let i = 0; i < 2; i++) {
-          const angle = i * 0.35 + 0.5;
-          const r = 6.0 + (i % 10) * 3.2;
-          const sx = startX + r * Math.cos(angle);
-          const sz = startZ + r * Math.sin(angle);
-          const sy = map.getGround(sx, sz) || 0;
-          gameState.shades.push(createShade([sx, sy, sz], `S${i+1}`));
-        }
+        // Quái spawn XA người chơi (>= 18m) từ vòng spawn ngoài rìa đảo
+        const shadePts = pickFarSpawns(getShadeSpawnPointsFor(nightNum), startX, startZ, 18.0, 2);
+        shadePts.forEach((pt, i) => {
+          gameState.shades.push(createShade(pt, `S${i + 1}`));
+        });
       }
 
       // If Benchmark Mode: Light L1-L3 with 100 fuel
@@ -1548,19 +1771,63 @@
     let shadeIdCounter = 0;
     let moteSpawnTimer = 3.5;
     let shadeSpawnTimer = 5.0;
+    let moteSpawnPoints = [];
 
-    function getRandomGroundPos(nightNum) {
-      const map = MAPS_DATA[nightNum];
-      for (let attempt = 0; attempt < 40; attempt++) {
-        const r = 5.0 + Math.random() * 32.0;
-        const a = Math.random() * Math.PI * 2;
-        const x = r * Math.cos(a);
-        const z = r * Math.sin(a);
-        const y = map.getGround(x, z);
-        if (y !== null) return [x, y, z];
+    // Lưới điểm spawn đom đóm ĐỀU trên map (mô phỏng theo core/maps.js) — Include độ y của tầng
+    function getMoteSpawnPointsFor(nightNum) {
+      const points = [];
+      const ring = (cx, cz, radius, y, count, offsetDeg = 0) => {
+        for (let i = 0; i < count; i++) {
+          const rad = ((offsetDeg + (i * 360) / count) * Math.PI) / 180;
+          points.push([Math.round((cx + radius * Math.cos(rad)) * 1000) / 1000, y, Math.round((cz + radius * Math.sin(rad)) * 1000) / 1000]);
+        }
+      };
+      if (nightNum === 1) {
+        ring(0, 0, 12, 0.0, 8);
+        ring(0, 0, 22, 0.0, 12, 15);
+        ring(0, 0, 33, 0.0, 16);
+      } else if (nightNum === 2) {
+        ring(0, 0, 10, 0.0, 4);
+        ring(0, 0, 22, 0.0, 8);
+        ring(70, 0, 10, 0.0, 4, 45);
+        ring(70, 0, 22, 0.0, 8, 22.5);
+        points.push([35, 0, 0]); // giữa cầu tre
+      } else if (nightNum === 3) {
+        ring(0, 0, 12, 0.0, 10);
+        ring(0, 0, 24, 0.0, 14, 15);
+        ring(0, 0, 34, 0.0, 18);
+        ring(0, 0, 18, 3.0, 8, 20);  // tầng 1
+        ring(0, 0, 5, 6.0, 4, 45);   // tầng 2 (sảnh tháp)
       }
-      return [0, 0, 0];
+      return points;
     }
+
+    // Vòng spawn quái ngoài rìa — dùng để spawn XA người chơi
+    function getShadeSpawnPointsFor(nightNum) {
+      const points = [];
+      const ring = (cx, cz, radius, count) => {
+        for (let i = 0; i < count; i++) {
+          const rad = ((22.5 + (i * 360) / count) * Math.PI) / 180;
+          points.push([Math.round((cx + radius * Math.cos(rad)) * 1000) / 1000, 0, Math.round((cz + radius * Math.sin(rad)) * 1000) / 1000]);
+        }
+      };
+      if (nightNum === 1) ring(0, 0, 37, 12);
+      else if (nightNum === 2) { ring(0, 0, 26, 8); ring(70, 0, 26, 8); }
+      else if (nightNum === 3) ring(0, 0, 43, 16);
+      return points;
+    }
+
+    // Chọn `count` điểm trong `points` CÁCH người chơi >= minDist (đảo ngẫu nhiên)
+    function pickFarSpawns(points, px, pz, minDist, count) {
+      const cands = points.filter(pt => Math.hypot(pt[0] - px, pt[2] - pz) >= minDist);
+      for (let i = cands.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [cands[i], cands[j]] = [cands[j], cands[i]];
+      }
+      return cands.slice(0, count);
+    }
+
+    // (getRandomGroundPos đã bị thay bởi lưới điểm spawn ĐỀU: getMoteSpawnPointsFor + pickFarSpawns)
 
     initNight(currentNight);
 
@@ -1606,10 +1873,43 @@
       document.getElementById('leaderboard-screen').classList.remove('active');
       document.getElementById('settings-screen').classList.remove('active');
       initNight(nightNum);
+      playCountdown(); // đếm ngược 3-2-1 trước khi gameplay bắt đầu
+    }
+
+    // Countdown 3-2-1 đầu mỗi Đêm
+    let countdownTimeouts = [];
+    function clearCountdown() {
+      countdownTimeouts.forEach(clearTimeout);
+      countdownTimeouts = [];
+      document.getElementById('countdown-screen').classList.remove('active');
+    }
+    function playCountdown() {
+      clearCountdown();
+      const cdEl = document.getElementById('countdown-screen');
+      const numEl = document.getElementById('countdown-num');
+      cdEl.classList.add('active');
+      isPaused = true; // đóng băng mô phỏng trong lúc đếm
+      const seq = ['3', '2', '1', '🔥'];
+      seq.forEach((txt, i) => {
+        countdownTimeouts.push(setTimeout(() => {
+          numEl.innerText = txt;
+          AudioSys.playChime(i === 3 ? 880 : 440 + i * 140, i === 3 ? 0.3 : 0.14);
+          // reset animation pop cho mỗi số
+          numEl.style.animation = 'none';
+          void numEl.offsetWidth;
+          numEl.style.animation = '';
+        }, i * 900));
+      });
+      countdownTimeouts.push(setTimeout(() => {
+        cdEl.classList.remove('active');
+        // nếu người chơi đã mở pause trong lúc đếm thì giữ pause
+        isPaused = document.getElementById('pause-screen').classList.contains('active');
+      }, seq.length * 900));
     }
 
     function openMainMenu() {
       isPaused = true;
+      clearCountdown();
       if (document.pointerLockElement) document.exitPointerLock();
       document.getElementById('pause-screen').classList.remove('active');
       document.getElementById('result-screen').classList.remove('active');
@@ -1617,9 +1917,9 @@
       document.body.classList.add('menu-open');
     }
 
-    // Đang mở screen chặn gameplay (intro/menu/kết thúc/bảng xếp hạng/cài đặt)?
+    // Đang mở screen chặn gameplay (intro/menu/kết thúc/bảng xếp hạng/cài đặt/đếm ngược)?
     function storyScreensOpen() {
-      return ['intro-screen', 'menu-screen', 'result-screen', 'leaderboard-screen', 'settings-screen']
+      return ['intro-screen', 'menu-screen', 'countdown-screen', 'result-screen', 'leaderboard-screen', 'settings-screen']
         .some(id => document.getElementById(id).classList.contains('active'));
     }
 
@@ -1683,8 +1983,24 @@
           const dx = s.pos[0] - gameState.player.pos[0];
           const dz = s.pos[2] - gameState.player.pos[2];
           const len = Math.hypot(dx, dz) || 1;
-          s.pos[0] += (dx / len) * 4.0;
-          s.pos[2] += (dz / len) * 4.0;
+          // Fix: đẩy lùi quái NHƯNG không bao giờ ra ngoài đảo (kẹp theo địa hình)
+          const fullX = s.pos[0] + (dx / len) * 4.0;
+          const fullZ = s.pos[2] + (dz / len) * 4.0;
+          if (MAPS_DATA[currentNight].getGround(fullX, fullZ) !== null) {
+            s.pos[0] = fullX;
+            s.pos[2] = fullZ;
+          } else {
+            // Đẩy dần tới sát mép (bước 0.25m) rồi dừng là cùng
+            for (let m = 3.75; m >= 0.25; m -= 0.25) {
+              const tx = s.pos[0] + (dx / len) * m;
+              const tz = s.pos[2] + (dz / len) * m;
+              if (MAPS_DATA[currentNight].getGround(tx, tz) !== null) {
+                s.pos[0] = tx;
+                s.pos[2] = tz;
+                break;
+              }
+            }
+          }
         }
       });
 
@@ -2094,8 +2410,11 @@
               gameState.player.pos[0] = testX;
               gameState.player.pos[2] = testZ;
             }
+            // Đẩy ra khỏi mọi vật ĐẶC (cây, đá, cột đèn, tháp) sau khi di chuyển
+            resolveSolidCollision(gameState.player);
             mayGroup.rotation.y = Math.atan2(worldX, worldZ);
           }
+          mayIsMoving = (mx !== 0 || mz !== 0) && gameState.player.grounded;
 
           if (gameState.player.dashTimer > 0) gameState.player.dashTimer -= dt;
 
@@ -2174,6 +2493,31 @@
 
           mayGroup.position.set(gameState.player.pos[0], gameState.player.pos[1], gameState.player.pos[2]);
 
+          // ---- Hoạt ảnh nhân vật: vung tay + nhún khi chạy, nghiêng người khi lướt ----
+          if (mayIsMoving) mayWalkPhase += dt * 11;
+          const armSwing = mayIsMoving ? Math.sin(mayWalkPhase) * 0.55 : 0;
+          mayParts.armL.rotation.x = -armSwing;
+          mayParts.armR.rotation.x = armSwing;
+          mayParts.head.position.y = 1.25 + (mayIsMoving ? Math.abs(Math.sin(mayWalkPhase)) * 0.045 : 0);
+          mayParts.body.scale.y = 1 + (mayIsMoving ? Math.abs(Math.sin(mayWalkPhase)) * 0.04 : 0);
+          mayGroup.position.y += mayParts.head.position.y - 1.25; // nhún theo đầu
+          // Nghiêng người về hướng di chuyển khi lướt (dash) — lerp mượt
+          const targetLean = gameState.player.dashTimer > 0 ? 0.38 : 0;
+          mayDashLean += (targetLean - mayDashLean) * Math.min(1, dt * 14);
+          mayGroup.rotation.x = mayDashLean;
+          // Vệt tốc độ vàng khi lướt
+          if (gameState.player.dashTimer > 0) {
+            const dd = gameState.player.dashDir;
+            for (let k = 0; k < 2; k++) {
+              spawnStreak(
+                gameState.player.pos[0] - dd[0] * 0.5 + (Math.random() - 0.5) * 0.6,
+                gameState.player.pos[1] + 0.4 + Math.random() * 0.9,
+                gameState.player.pos[2] - dd[1] * 0.5 + (Math.random() - 0.5) * 0.6,
+                -dd[0], -dd[1], 0xFFE9A8, 13
+              );
+            }
+          }
+
           // Pickup motes
           for (let i = gameState.motes.length - 1; i >= 0; i--) {
             const m = gameState.motes[i];
@@ -2186,14 +2530,34 @@
             }
           }
 
-          // Periodic Mote Respawn
+          // Periodic Mote Respawn — chọn điểm spawn CÒN TRỐNG trong lưới đều (xa đom đóm hiện có)
           moteSpawnTimer -= dt;
           if (moteSpawnTimer <= 0) {
             moteSpawnTimer = gameState.motes.length < 12 ? 2.0 : 3.5;
             if (gameState.motes.length < 30) {
-              moteIdCounter++;
-              const pos = getRandomGroundPos(currentNight);
-              gameState.motes.push(createMote(`M${moteIdCounter}`, pos));
+              const free = moteSpawnPoints.filter(pt =>
+                !gameState.motes.some(m => Math.hypot(m.pos[0] - pt[0], m.pos[2] - pt[2]) < 2.0)
+              );
+              if (free.length > 0) {
+                const pt = free[Math.floor(Math.random() * free.length)];
+                moteIdCounter++;
+                gameState.motes.push(createMote(`M${moteIdCounter}`, [pt[0], pt[1] ?? 0, pt[2]]));
+              }
+            }
+          }
+
+          // Spawn quái định kỳ — LUÔN cách người chơi >= 15m (từ vòng spawn ngoài rìa đảo)
+          shadeSpawnTimer -= dt;
+          if (shadeSpawnTimer <= 0) {
+            shadeSpawnTimer = currentNight === 3 ? 6.0 : 7.0;
+            const maxShades = currentNight === 1 ? 6 : (currentNight === 2 ? 8 : 10);
+            if (gameState.shades.length < maxShades) {
+              const pts = pickFarSpawns(getShadeSpawnPointsFor(currentNight), gameState.player.pos[0], gameState.player.pos[2], 15.0, 1);
+              if (pts.length > 0) {
+                gameState.shades.push(createShade(pts[0], null));
+                shadeAlertTimer = 1.6; // phụ đề "👻 Bóng Mực xuất hiện!"
+                AudioSys.playChime(220, 0.3);
+              }
             }
           }
 
@@ -2339,6 +2703,21 @@
           });
           if (seaMesh) seaMesh.position.y = -6.5 + Math.sin(time * 0.0006) * 0.25;
           if (mistMesh) mistMesh.position.y = -5.2 + Math.sin(time * 0.0011 + 2.0) * 0.35;
+
+          // Cập nhật pool vệt tốc độ (lướt + gió)
+          glowStreaks.forEach(s => {
+            if (s.life > 0) {
+              s.life -= dt;
+              s.mesh.position.x += s.vx * dt;
+              s.mesh.position.y += s.vy * dt;
+              s.mesh.position.z += s.vz * dt;
+              s.mesh.material.opacity = Math.max(0, s.life / 0.32) * 0.75;
+              if (s.life <= 0) s.mesh.visible = false;
+            }
+          });
+
+          // Mây trời trôi chậm
+          cloudMeshes.forEach(c => { c.rotation.y += dt * c.userData.spin; });
         }
 
         // Camera Positioning
@@ -2420,6 +2799,7 @@
           // Night 3 periodic wind gusts (every 30s)
           let isWindWarning = false;
           let isWindGusting = false;
+          let windDirText = '';
           if (currentNight === 3) {
             night3WindTime = (night3WindTime + dt) % 30.0;
             if (night3WindTime >= 22.0 && night3WindTime < 25.0) {
@@ -2427,14 +2807,42 @@
             } else if (night3WindTime >= 25.0 && night3WindTime < 30.0) {
               isWindGusting = true;
               // Fix "gió thổi lên bục cao": gió chỉ đẩy ngang NẾU vị trí mới không bị chặn
-              // bởi tường bậc thang Đêm 3 (cùng logic với di chuyển thường, không xuyên tường).
+              // bởi tường bậc thang Đêm 3 (cùng logic với di chuyển thường, không xuyên tường),
+              // và không đẩy xuyên vật đặc.
               const windDispX = Math.cos(night3WindDir) * 2.2 * dt;
               const windDispZ = Math.sin(night3WindDir) * 2.2 * dt;
               const p = gameState.player;
               if (!isNight3WallBlocked(p.pos[1], p.pos[0] + windDispX, p.pos[2] + windDispZ)) {
                 p.pos[0] += windDispX;
                 p.pos[2] += windDispZ;
+                resolveSolidCollision(p);
               }
+
+              // Animation gió: vệt xanh lướt xiết qua quanh người chơi theo hướng gió
+              for (let w = 0; w < 2; w++) {
+                spawnStreak(
+                  p.pos[0] - Math.cos(night3WindDir) * 5.5 + (Math.random() - 0.5) * 9,
+                  p.pos[1] + 0.3 + Math.random() * 2.2,
+                  p.pos[2] - Math.sin(night3WindDir) * 5.5 + (Math.random() - 0.5) * 9,
+                  Math.cos(night3WindDir), Math.sin(night3WindDir), 0x8FC7FF, 16
+                );
+              }
+            }
+
+            // Cảnh báo HƯỚNG gió so với camera (rel = góc gió trên màn hình: 0 = trước mặt)
+            if (isWindWarning || isWindGusting) {
+              const worldA = Math.atan2(Math.cos(night3WindDir), Math.sin(night3WindDir));
+              let rel = worldA - camYaw;
+              while (rel > Math.PI) rel -= 2 * Math.PI;
+              while (rel < -Math.PI) rel += 2 * Math.PI;
+              const deg = Math.abs(rel) * 180 / Math.PI;
+              if (deg <= 45) windDirText = 'trước mặt';
+              else if (deg >= 135) windDirText = 'sau lưng';
+              else if (rel > 0) windDirText = 'bên trái';
+              else windDirText = 'bên phải';
+              windRelScreenAngle = rel;
+            } else {
+              windRelScreenAngle = null;
             }
           }
 
@@ -2447,10 +2855,10 @@
             promptText = `👻 Cảnh báo: Bóng Mực xuất hiện!`;
             isDangerPrompt = true;
           } else if (isWindWarning) {
-            promptText = `🌬 Cảnh báo: Gió sắp thổi! Hãy cẩn thận giữ thăng bằng!`;
+            promptText = `🌬 Cảnh báo: Gió sắp thổi về ${windDirText}! Hãy cẩn thận giữ thăng bằng!`;
             isDangerPrompt = true;
           } else if (isWindGusting) {
-            promptText = `🌬 Gió giật mạnh! Giữ vững ngọn lửa!`;
+            promptText = `🌬 Gió giật mạnh về ${windDirText}! Giữ vững ngọn lửa!`;
             isDangerPrompt = true;
           }
 
@@ -2514,6 +2922,29 @@
               radarCtx.restore();
             }
           });
+
+          // Mũi tên HƯỚNG GIÓ (Đêm 3): chevron xanh dương quanh tâm màn hình,
+          // nhấp nháy trong lúc cảnh báo trước gió, sáng liên tục khi gió giật
+          if (currentNight === 3 && windRelScreenAngle !== null && (isWindWarning || isWindGusting)) {
+            const blink = isWindWarning && !reduceMotion && Math.sin(time * 0.012) < 0;
+            if (!blink) {
+              const ringR = Math.min(radarCanvas.width, radarCanvas.height) * 0.16;
+              const wx = cx - Math.sin(windRelScreenAngle) * ringR;
+              const wy = cy - Math.cos(windRelScreenAngle) * ringR;
+              radarCtx.save();
+              radarCtx.translate(wx, wy);
+              radarCtx.rotate(-windRelScreenAngle);
+              radarCtx.fillStyle = '#8FC7FF';
+              radarCtx.strokeStyle = '#8FC7FF';
+              radarCtx.lineWidth = 2.5;
+              // 2 chevron chỉ hướng gió đang thổi tới
+              radarCtx.beginPath();
+              radarCtx.moveTo(-11, 8); radarCtx.lineTo(0, -6); radarCtx.lineTo(11, 8);
+              radarCtx.moveTo(-11, 20); radarCtx.lineTo(0, 6); radarCtx.lineTo(11, 20);
+              radarCtx.stroke();
+              radarCtx.restore();
+            }
+          }
         }
       }
 
