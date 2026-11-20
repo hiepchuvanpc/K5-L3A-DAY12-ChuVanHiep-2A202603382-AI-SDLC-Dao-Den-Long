@@ -517,8 +517,8 @@
     // Three.js Scene Setup
     const container = document.getElementById('canvas-container');
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0E1430);
-    scene.fog = new THREE.FogExp2(0x1B2350, 0.018);
+    scene.background = new THREE.Color(0x0C1226);
+    scene.fog = new THREE.FogExp2(0x141F36, 0.009); // Clearer atmospheric fog
 
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -526,11 +526,14 @@
     renderer.shadowMap.enabled = true;
     container.appendChild(renderer.domElement);
 
-    const ambientLight = new THREE.AmbientLight(0xFFE9B0, 0.25);
+    const ambientLight = new THREE.AmbientLight(0xE2ECFF, 0.45); // Clear, soft night illumination
     scene.add(ambientLight);
 
-    const moonLight = new THREE.DirectionalLight(0x8FA3B8, 0.7);
-    moonLight.position.set(40, 70, 30);
+    const hemiLight = new THREE.HemisphereLight(0x6A86B4, 0x1B2638, 0.40); // Sky and ground ambient fill
+    scene.add(hemiLight);
+
+    const moonLight = new THREE.DirectionalLight(0xD8E8FF, 1.15); // Luminous moon
+    moonLight.position.set(45, 80, 35);
     moonLight.castShadow = true;
     scene.add(moonLight);
 
@@ -570,7 +573,7 @@
     miniLantern.position.set(0.45, 1.3, 0);
     mayGroup.add(miniLantern);
 
-    const miniLight = new THREE.PointLight(0xFFB347, 1.2, 5);
+    const miniLight = new THREE.PointLight(0xFFA500, 2.5, 9);
     miniLight.position.set(0.45, 1.3, 0);
     mayGroup.add(miniLight);
     scene.add(mayGroup);
@@ -663,7 +666,7 @@
         const g = new THREE.Group();
         g.position.set(l.pos[0], l.pos[1], l.pos[2]);
 
-        const base = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 1.0, 0.4, 8), new THREE.MeshStandardMaterial({ color: 0x5B5F6E }));
+        const base = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 1.0, 0.4, 8), new THREE.MeshStandardMaterial({ color: 0x4B5261 }));
         base.position.y = 0.2;
         g.add(base);
 
@@ -671,11 +674,15 @@
         pillar.position.y = 1.3;
         g.add(pillar);
 
-        const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 16), new THREE.MeshBasicMaterial({ color: 0x5B5F6E }));
+        // Bulb with warm amber beacon when unlit so players can navigate toward it
+        const bulb = new THREE.Mesh(
+          new THREE.SphereGeometry(0.42, 16, 16),
+          new THREE.MeshStandardMaterial({ color: 0x8A4B1A, emissive: 0xD97706, emissiveIntensity: 0.65 })
+        );
         bulb.position.y = 2.4;
         g.add(bulb);
 
-        const light = new THREE.PointLight(0xFFB347, 0, 16);
+        const light = new THREE.PointLight(0xF2A83B, 0.9, 10);
         light.position.y = 2.4;
         g.add(light);
 
@@ -700,30 +707,19 @@
       // Spawn Initial Motes (20)
       gameState.motes = [];
       for (let i = 0; i < 20; i++) {
-        const r = 8 + Math.random() * 26;
-        const angle = Math.random() * Math.PI * 2;
+        const pos = getRandomGroundPos(nightNum);
+        gameState.motes.push(createMote(`M${i+1}`, pos));
+      }
+
+      // Spawn Initial Shades (2) closer to player (radius 18..22m) so they immediately stalk
+      gameState.shades = [];
+      for (let i = 0; i < 2; i++) {
+        const angle = i * Math.PI + 0.4;
+        const r = 18.0 + Math.random() * 4.0;
         const x = r * Math.cos(angle);
         const z = r * Math.sin(angle);
         const y = map.getGround(x, z) || 0;
-
-        const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), new THREE.MeshBasicMaterial({ color: 0xFFF6C2 }));
-        mesh.position.set(x, y + 0.6, z);
-        envGroup.add(mesh);
-        gameState.motes.push({ id: `M${i+1}`, pos: [x, y, z], mesh });
-      }
-
-      // Spawn Shades
-      gameState.shades = [];
-      for (let i = 0; i < 2; i++) {
-        const r = 32 + Math.random() * 5;
-        const angle = i * Math.PI + Math.random() * 0.5;
-        const x = r * Math.cos(angle);
-        const z = r * Math.sin(angle);
-
-        const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.7, 16, 16), new THREE.MeshStandardMaterial({ color: 0x120A1A, emissive: 0x7A3CFF }));
-        mesh.position.set(x, 0.8, z);
-        envGroup.add(mesh);
-        gameState.shades.push({ id: `S${i+1}`, pos: [x, 0, z], mesh, state: 'chase', stunnedTimer: 0 });
+        gameState.shades.push(createShade([x, y, z]));
       }
 
       // Spawn Drifter (Night 2 and 3)
@@ -736,7 +732,9 @@
         gameState.drifters.push({ id: 'D1', pos: [25, 1, 10], mesh, state: 'idle', stolen: 0 });
       }
 
-      // Reset Player
+      // Reset Timers & Player
+      moteSpawnTimer = 3.5;
+      shadeSpawnTimer = 5.0; // 300 ticks in contract
       gameState.player = {
         pos: [0, 0, 0],
         vel: [0, 0, 0],
@@ -755,6 +753,116 @@
       gameState.timeLeft = map.duration_s;
       gameState.state = 'playing';
       isPaused = false;
+    }
+
+    let moteIdCounter = 20;
+    let shadeIdCounter = 0;
+    let moteSpawnTimer = 3.5;
+    let shadeSpawnTimer = 5.0;
+
+    function getRandomGroundPos(nightNum) {
+      const map = MAPS_DATA[nightNum];
+      for (let attempt = 0; attempt < 60; attempt++) {
+        let x, z;
+        if (nightNum === 1) {
+          const r = 5.0 + Math.random() * 32.0;
+          const a = Math.random() * Math.PI * 2;
+          x = r * Math.cos(a);
+          z = r * Math.sin(a);
+        } else if (nightNum === 2) {
+          const pick = Math.random();
+          if (pick < 0.45) {
+            const r = Math.random() * 24.0;
+            const a = Math.random() * Math.PI * 2;
+            x = r * Math.cos(a); z = r * Math.sin(a);
+          } else if (pick < 0.90) {
+            const r = Math.random() * 24.0;
+            const a = Math.random() * Math.PI * 2;
+            x = 70.0 + r * Math.cos(a); z = r * Math.sin(a);
+          } else {
+            x = 28.0 + Math.random() * 14.0;
+            z = (Math.random() - 0.5) * 3.0;
+          }
+        } else {
+          const r = 4.0 + Math.random() * 38.0;
+          const a = Math.random() * Math.PI * 2;
+          x = r * Math.cos(a);
+          z = r * Math.sin(a);
+        }
+        const y = map.getGround(x, z);
+        if (y !== null) {
+          return [x, y, z];
+        }
+      }
+      return [0, 0, 0];
+    }
+
+    function createMote(id, pos) {
+      const g = new THREE.Group();
+      g.position.set(pos[0], pos[1] + 0.6, pos[2]);
+
+      const sphere = new THREE.Mesh(
+        new THREE.SphereGeometry(0.24, 12, 12),
+        new THREE.MeshStandardMaterial({
+          color: 0xFFFBE6,
+          emissive: 0xF2C14E,
+          emissiveIntensity: 1.0,
+          roughness: 0.2
+        })
+      );
+      g.add(sphere);
+
+      const light = new THREE.PointLight(0xF2C14E, 0.7, 3.5);
+      g.add(light);
+
+      envGroup.add(g);
+      return { id, pos: [...pos], mesh: g, sphere, light };
+    }
+
+    function createShade(pos) {
+      shadeIdCounter++;
+      const id = `S${shadeIdCounter}`;
+      const g = new THREE.Group();
+      g.position.set(pos[0], pos[1] + 0.8, pos[2]);
+
+      // Body: dark purple/black ink sphere
+      const body = new THREE.Mesh(
+        new THREE.SphereGeometry(0.72, 16, 16),
+        new THREE.MeshStandardMaterial({
+          color: 0x0C0816,
+          emissive: 0x6B21A8,
+          emissiveIntensity: 0.65,
+          roughness: 0.4
+        })
+      );
+      g.add(body);
+
+      // Glowing sinister eyes
+      const eyeGeo = new THREE.SphereGeometry(0.12, 8, 8);
+      const eyeMat = new THREE.MeshBasicMaterial({ color: 0xF43F5E });
+      const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
+      eyeL.position.set(-0.25, 0.2, 0.55);
+      g.add(eyeL);
+      const eyeR = new THREE.Mesh(eyeGeo, eyeMat);
+      eyeR.position.set(0.25, 0.2, 0.55);
+      g.add(eyeR);
+
+      // Dedicated purple aura light
+      const aura = new THREE.PointLight(0xA855F7, 2.2, 8.0);
+      aura.position.set(0, 0.2, 0);
+      g.add(aura);
+
+      envGroup.add(g);
+      return {
+        id,
+        pos: [...pos],
+        mesh: g,
+        body,
+        aura,
+        state: 'chase',
+        stunnedTimer: 0,
+        recoilTimer: 0
+      };
     }
 
     initNight(currentNight);
@@ -888,8 +996,12 @@
 
             const lObj = lanternMeshes.find(m => m.id === target.id);
             if (lObj) {
-              lObj.bulb.material.color.setHex(0xFFE9B0);
-              lObj.light.intensity = 2.5;
+              lObj.bulb.material.color.setHex(0xFFF1C5);
+              lObj.bulb.material.emissive.setHex(0xF2C14E);
+              lObj.bulb.material.emissiveIntensity = 1.2;
+              lObj.light.color.setHex(0xFFD56B);
+              lObj.light.intensity = 3.5;
+              lObj.light.distance = 22;
             }
 
             if (gameState.lanterns.every(l => l.lit)) {
@@ -1043,7 +1155,19 @@
             gameState.motes.splice(i, 1);
             AudioSys.playChime(650, 0.2);
           } else {
-            m.mesh.position.y = m.pos[1] + 0.6 + Math.sin(time * 0.003 + i) * 0.12;
+            m.mesh.position.y = m.pos[1] + 0.6 + Math.sin(time * 0.003 + i) * 0.15;
+            m.mesh.rotation.y += dt * 1.5;
+          }
+        }
+
+        // Periodic Mote Respawning (Ticket-02 standard: cap 30, continuous replenishing)
+        moteSpawnTimer -= dt;
+        if (moteSpawnTimer <= 0) {
+          moteSpawnTimer = gameState.motes.length < 12 ? 2.0 : 3.5;
+          if (gameState.motes.length < 30) {
+            moteIdCounter++;
+            const pos = getRandomGroundPos(currentNight);
+            gameState.motes.push(createMote(`M${moteIdCounter}`, pos));
           }
         }
 
@@ -1067,41 +1191,111 @@
           if (cm.data.available) cm.mesh.rotation.y += dt * 2;
         });
 
+        // Periodic Shade Spawning (Ticket-02 standard: spawn every 8s, up to 5 in N1, 7 in N2, 9 in N3)
+        shadeSpawnTimer -= dt;
+        const maxShades = currentNight === 1 ? 5 : (currentNight === 2 ? 7 : 9);
+        if (shadeSpawnTimer <= 0 && gameState.shades.length < maxShades) {
+          shadeSpawnTimer = 8.0;
+          const angle = Math.random() * Math.PI * 2;
+          const spawnDist = 20.0 + Math.random() * 8.0;
+          const sx = gameState.player.pos[0] + spawnDist * Math.cos(angle);
+          const sz = gameState.player.pos[2] + spawnDist * Math.sin(angle);
+          const sy = MAPS_DATA[currentNight].getGround(sx, sz);
+          if (sy !== null) {
+            gameState.shades.push(createShade([sx, sy, sz]));
+          }
+        }
+
         // Shades AI
         gameState.shades.forEach(s => {
           if (s.stunnedTimer > 0) {
             s.stunnedTimer -= dt;
             s.mesh.rotation.y += dt * 8;
-            s.mesh.material.emissive.setHex(0x3A3450);
+            s.aura.intensity = 0.5;
+            s.body.material.emissive.setHex(0x3B185F);
+          } else if (s.recoilTimer > 0) {
+            s.recoilTimer -= dt;
           } else {
-            s.state = 'chase';
-            s.mesh.material.emissive.setHex(0x7A3CFF);
+            s.aura.intensity = 2.2;
+            s.body.material.emissive.setHex(0x7A3CFF);
 
             const dx = gameState.player.pos[0] - s.pos[0];
             const dz = gameState.player.pos[2] - s.pos[2];
             const d = Math.hypot(dx, dz);
-            if (d > 0.01) {
-              const speed = currentNight === 3 ? 4.5 : 4.0;
-              const nextX = s.pos[0] + (dx / d) * speed * dt;
-              const nextZ = s.pos[2] + (dz / d) * speed * dt;
 
-              let blocked = false;
-              gameState.lanterns.forEach(l => {
-                if (l.lit && Math.hypot(nextX - l.pos[0], nextZ - l.pos[2]) < 6.0) blocked = true;
-              });
-              if (!blocked) {
-                s.pos[0] = nextX;
-                s.pos[2] = nextZ;
+            // Rotate shade to face direction of motion
+            s.mesh.rotation.y = Math.atan2(dx, dz);
+
+            const speed = currentNight === 3 ? 4.5 : 4.0;
+            let moveX = 0, moveZ = 0;
+
+            if (d <= 24.0) {
+              // Aggressive chase towards Mây
+              s.state = 'chase';
+              moveX = (dx / (d || 1)) * speed * dt;
+              moveZ = (dz / (d || 1)) * speed * dt;
+            } else {
+              // Roam / patrol towards player region so they actively converge
+              s.state = 'wander';
+              const targetX = gameState.player.pos[0] * 0.6;
+              const targetZ = gameState.player.pos[2] * 0.6;
+              const tdx = targetX - s.pos[0];
+              const tdz = targetZ - s.pos[2];
+              const tlen = Math.hypot(tdx, tdz) || 1;
+              moveX = (tdx / tlen) * (speed * 0.6) * dt;
+              moveZ = (tdz / tlen) * (speed * 0.6) * dt;
+            }
+
+            let nextX = s.pos[0] + moveX;
+            let nextZ = s.pos[2] + moveZ;
+
+            // Safe Zone avoidance: lit lanterns repel/block shades at 6m
+            for (const l of gameState.lanterns) {
+              if (l.lit) {
+                const distToLantern = Math.hypot(nextX - l.pos[0], nextZ - l.pos[2]);
+                if (distToLantern < 6.0) {
+                  const lx = nextX - l.pos[0];
+                  const lz = nextZ - l.pos[2];
+                  const lDist = Math.hypot(lx, lz) || 1;
+                  // Slide around safe zone perimeter
+                  nextX = l.pos[0] + (lx / lDist) * 6.05;
+                  nextZ = l.pos[2] + (lz / lDist) * 6.05;
+                  break;
+                }
               }
             }
-            s.mesh.position.set(s.pos[0], 0.8, s.pos[2]);
+
+            const groundY = MAPS_DATA[currentNight].getGround(nextX, nextZ);
+            if (groundY !== null) {
+              s.pos[0] = nextX;
+              s.pos[1] = groundY;
+              s.pos[2] = nextZ;
+            }
+
+            // Floating bobbing effect
+            s.mesh.position.set(s.pos[0], s.pos[1] + 0.8 + Math.sin(time * 0.005 + (s.id.charCodeAt(1) || 0)) * 0.12, s.pos[2]);
 
             // Hit player
-            if (gameState.player.invulnTimer <= 0 && d <= 1.0) {
+            if (gameState.player.invulnTimer <= 0 && d <= 1.0 && Math.abs(s.pos[1] - gameState.player.pos[1]) <= 1.5) {
               gameState.player.flames -= 1;
               gameState.player.invulnTimer = 1.5;
-              const dropped = Math.floor(gameState.player.carried * 0.5);
-              gameState.player.carried -= dropped;
+              s.recoilTimer = 1.0; // recoil for 60 ticks = 1s
+
+              // Drop floor(carried / 2) motes in 1.5-2.5m ring
+              const droppedCount = Math.floor(gameState.player.carried / 2);
+              gameState.player.carried -= droppedCount;
+              for (let k = 0; k < droppedCount; k++) {
+                const dropAngle = (Math.PI * 2 * k) / (droppedCount || 1) + Math.random() * 0.3;
+                const dropDist = 1.5 + Math.random() * 1.0;
+                const dropX = gameState.player.pos[0] + Math.cos(dropAngle) * dropDist;
+                const dropZ = gameState.player.pos[2] + Math.sin(dropAngle) * dropDist;
+                const dropY = MAPS_DATA[currentNight].getGround(dropX, dropZ);
+                if (dropY !== null && gameState.motes.length < 30) {
+                  moteIdCounter++;
+                  gameState.motes.push(createMote(`M_drop_${moteIdCounter}`, [dropX, dropY, dropZ]));
+                }
+              }
+
               AudioSys.playHit();
 
               if (gameState.player.flames <= 0) {
@@ -1176,7 +1370,7 @@
         document.getElementById('lanterns-lit').innerText = `${litCount} / ${gameState.lanterns.length}`;
         document.getElementById('score-val').innerText = gameState.score;
 
-        ambientLight.intensity = 0.15 + 0.55 * (litCount / gameState.lanterns.length);
+        ambientLight.intensity = 0.42 + 0.35 * (litCount / gameState.lanterns.length);
 
         const flameIcons = document.querySelectorAll('.flame-icon');
         flameIcons.forEach((fi, idx) => {
