@@ -1,0 +1,21 @@
+{
+  "name": "dao-den-long",
+  "version": "1.0.0",
+  "description": "Đảo Đèn Lồng - 3D Action Adventure & Headless Game Simulation",
+  "type": "module",
+  "main": "src/cli/headless.js",
+  "scripts": {
+    "start": "node src/web/server.js",
+    "headless": "node src/cli/headless.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "keywords": [
+    "game",
+    "3d",
+    "headless",
+    "simulation",
+    "ai-sdlc"
+  ],
+  "author": "Chu Van Hiep (2A202603382)",
+  "license": "MIT"
+}
