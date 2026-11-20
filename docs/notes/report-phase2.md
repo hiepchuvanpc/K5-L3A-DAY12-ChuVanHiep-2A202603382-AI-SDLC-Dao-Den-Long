@@ -1,11 +1,5 @@
 # Báo Cáo SDLC & Đánh Giá Tổng Hợp — Phase 2 (Ticket-02)
 
-Dự án: **Đảo Đèn Lồng (Lantern Island)**
-Sinh viên: **Chử Văn Hiệp** · MSSV: **2A202603382** · Lớp: **L3A**
-Mục tiêu: Đạt điểm tối đa theo [RUBRIC.md](../../RUBRIC.md) (Hạng mục B, C, D, E, F, G).
-
----
-
 ## 1. Ma Trận Truy Vết Yêu Cầu (Requirements Traceability Matrix)
 
 | Mã Yêu Cầu | Nội Dung Yêu Cầu (Ticket-02 / Contract v1.1) | File Mã Nguồn Xử Lý | File Kiểm Thử / Scenario | Bằng Chứng Đầu Ra (Proof) | Kết Quả |

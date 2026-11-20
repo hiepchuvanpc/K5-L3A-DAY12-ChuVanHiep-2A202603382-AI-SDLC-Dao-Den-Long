@@ -151,9 +151,8 @@ export const MAPS = {
     getGround(x, z) {
       const r = Math.hypot(x, z);
       if (r > 45.0) return null; // off island
-      if (r <= 2.0) return null; // bell tower cylinder wall
 
-      // Tier 2: r <= 8m at Y = 6
+      // Tier 2: r <= 8m at Y = 6 (including bell tower center)
       if (r <= 8.0) return 6.0;
 
       // Tier 1: r in [12, 24] with z > 0 at Y = 3
