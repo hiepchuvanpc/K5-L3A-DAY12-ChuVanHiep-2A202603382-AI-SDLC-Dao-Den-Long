@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const ROOT_DIR = path.resolve(__dirname, '../..');
 
 const PORT = process.env.PORT || 3000;
 
@@ -24,15 +25,13 @@ const server = http.createServer((req, res) => {
     reqPath = '/index.html';
   }
 
-  const filePath = path.join(__dirname, reqPath);
-
-  // Security: prevent path traversal
-  if (!filePath.startsWith(__dirname)) {
-    res.writeHead(403);
-    res.end('Forbidden');
-    return;
+  // Check in src/web first, then root directory
+  let filePath = path.join(__dirname, reqPath);
+  if (!fs.existsSync(filePath)) {
+    filePath = path.join(ROOT_DIR, reqPath);
   }
 
+  // Fallback check
   fs.stat(filePath, (err, stats) => {
     if (err || !stats.isFile()) {
       res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
@@ -43,7 +42,10 @@ const server = http.createServer((req, res) => {
     const ext = path.extname(filePath).toLowerCase();
     const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
-    res.writeHead(200, { 'Content-Type': contentType });
+    res.writeHead(200, {
+      'Content-Type': contentType,
+      'Access-Control-Allow-Origin': '*'
+    });
     fs.createReadStream(filePath).pipe(res);
   });
 });

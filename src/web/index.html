@@ -18,7 +18,7 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 20px 24px;
+      padding: 16px 20px;
     }
 
     .top-bar {
@@ -40,7 +40,7 @@
     }
 
     .title-banner h1 {
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 700;
       color: #F2C14E;
       text-shadow: 0 0 10px rgba(242, 193, 78, 0.6);
@@ -64,7 +64,7 @@
       border: 1px solid rgba(242, 193, 78, 0.4);
       border-radius: 20px;
       padding: 6px 20px;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: bold;
       color: #F5F1E6;
       letter-spacing: 2px;
@@ -82,7 +82,7 @@
 
     .hud-metrics {
       display: flex;
-      gap: 16px;
+      gap: 14px;
     }
 
     .metric {
@@ -91,7 +91,7 @@
       align-items: center;
     }
     .metric-label { font-size: 10px; text-transform: uppercase; color: #8FA3B8; letter-spacing: 0.5px; }
-    .metric-value { font-size: 18px; font-weight: bold; color: #F5F1E6; margin-top: 2px; }
+    .metric-value { font-size: 17px; font-weight: bold; color: #F5F1E6; margin-top: 2px; }
     .metric-value.accent { color: #F2C14E; text-shadow: 0 0 10px rgba(242, 193, 78, 0.6); }
 
     .flames-container {
@@ -101,7 +101,7 @@
       margin-top: 4px;
     }
     .flame-icon {
-      font-size: 18px;
+      font-size: 17px;
       filter: drop-shadow(0 0 6px #C8102E);
       transition: transform 0.3s, opacity 0.3s;
     }
@@ -117,7 +117,7 @@
       flex-direction: column;
       align-items: center;
       gap: 8px;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .mote-bar-container {
@@ -149,7 +149,7 @@
       color: #FFF6C2;
       padding: 6px 20px;
       border-radius: 20px;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
       text-shadow: 0 0 8px rgba(242, 193, 78, 0.6);
       backdrop-filter: blur(6px);
@@ -165,14 +165,14 @@
     }
 
     .controls-hint {
-      background: rgba(14, 20, 48, 0.7);
+      background: rgba(14, 20, 48, 0.75);
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 8px;
       padding: 8px 14px;
       font-size: 12px;
       color: #8FA3B8;
       display: flex;
-      gap: 16px;
+      gap: 14px;
     }
     .key-badge {
       background: rgba(242, 193, 78, 0.15);
@@ -189,8 +189,8 @@
       gap: 12px;
     }
     .skill-box {
-      width: 52px;
-      height: 52px;
+      width: 50px;
+      height: 50px;
       background: rgba(14, 20, 48, 0.85);
       border: 1px solid rgba(242, 193, 78, 0.4);
       border-radius: 10px;
@@ -202,19 +202,19 @@
       overflow: hidden;
     }
     .skill-key { font-size: 10px; color: #F2C14E; font-weight: bold; }
-    .skill-name { font-size: 10px; color: #8FA3B8; margin-top: 2px; }
+    .skill-name { font-size: 9px; color: #8FA3B8; margin-top: 2px; }
     .skill-cd-overlay {
       position: absolute;
       bottom: 0; left: 0; width: 100%; height: 0%;
       background: rgba(255, 90, 95, 0.5);
-      transition: height 0.1s linear;
+      transition: height 0.08s linear;
     }
 
-    /* Pause & End Modals */
+    /* Modals */
     .modal-screen {
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(14, 20, 48, 0.9);
+      background: rgba(14, 20, 48, 0.92);
       backdrop-filter: blur(12px);
       z-index: 100;
       display: none;
@@ -226,15 +226,15 @@
       padding: 24px;
     }
     .modal-screen.active { display: flex; }
-    .modal-title { font-size: 40px; margin-bottom: 12px; font-weight: 800; letter-spacing: 2px; color: #F2C14E; }
-    .modal-desc { font-size: 16px; color: #8FA3B8; margin-bottom: 24px; max-width: 550px; line-height: 1.5; }
+    .modal-title { font-size: 36px; margin-bottom: 12px; font-weight: 800; letter-spacing: 2px; color: #F2C14E; }
+    .modal-desc { font-size: 15px; color: #8FA3B8; margin-bottom: 24px; max-width: 550px; line-height: 1.5; }
     .btn-action {
       background: linear-gradient(135deg, #F2C14E, #C8102E);
       border: none;
       border-radius: 25px;
-      padding: 12px 36px;
+      padding: 12px 32px;
       color: #FFF;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 700;
       cursor: pointer;
       margin: 6px;
@@ -249,25 +249,11 @@
       background: rgba(255, 255, 255, 0.1);
       border: 1px solid rgba(255, 255, 255, 0.2);
     }
-
-    /* Directional Indicator Arrow */
-    #nav-arrow {
-      position: absolute;
-      width: 0; height: 0;
-      border-left: 10px solid transparent;
-      border-right: 10px solid transparent;
-      border-bottom: 20px solid #F2C14E;
-      pointer-events: none;
-      z-index: 20;
-      display: none;
-      filter: drop-shadow(0 0 6px #F2C14E);
-    }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
   <div id="canvas-container"></div>
-  <div id="nav-arrow"></div>
 
   <div id="hud">
     <div class="top-bar">
@@ -342,7 +328,7 @@
     <div>
       <button class="btn-action" id="btn-resume">Tiếp tục</button>
       <button class="btn-action btn-secondary" id="btn-restart-night">Chơi lại Đêm</button>
-      <button class="btn-action btn-secondary" id="btn-switch-night">Chọn Đêm (1/2/3)</button>
+      <button class="btn-action btn-secondary" id="btn-switch-night">Đổi Đêm (1 / 2 / 3)</button>
     </div>
   </div>
 
@@ -357,14 +343,8 @@
     </div>
   </div>
 
-  <script type="module">
-    import { GameEngine } from './core/engine.js';
-    import { MAPS } from './core/maps.js';
-
-    let currentNight = 1;
-    let engine = new GameEngine({ seed: Date.now(), night: currentNight });
-
-    // Web Audio Synthesizer
+  <script>
+    // Web Audio Synthesizer (No external asset dependency)
     const AudioSys = {
       ctx: null,
       init() {
@@ -425,7 +405,116 @@
     window.addEventListener('click', () => AudioSys.init(), { once: true });
     window.addEventListener('keydown', () => AudioSys.init(), { once: true });
 
-    // Three.js Scene Setup with Standard Color Palette
+    // Standard Map Definitions
+    const MAPS_DATA = {
+      1: {
+        name: 'Đảo Bến',
+        duration_s: 300,
+        lanterns: [
+          { id: 'L1', pos: [0.0, 0.0, 25.0] },
+          { id: 'L2', pos: [23.8, 0.0, 7.7] },
+          { id: 'L3', pos: [14.7, 0.0, -20.2] },
+          { id: 'L4', pos: [-14.7, 0.0, -20.2] },
+          { id: 'L5', pos: [-23.8, 0.0, 7.7] }
+        ],
+        getGround(x, z) {
+          return Math.hypot(x, z) <= 40.0 ? 0.0 : null;
+        },
+        jumpPads: [],
+        charms: []
+      },
+      2: {
+        name: 'Đảo Cau',
+        duration_s: 330,
+        lanterns: [
+          { id: 'L1', pos: [0.0, 0.0, 20.0] },
+          { id: 'L2', pos: [17.0, 0.0, -10.0] },
+          { id: 'L3', pos: [-17.0, 0.0, -10.0] },
+          { id: 'L4', pos: [70.0, 0.0, 20.0] },
+          { id: 'L5', pos: [87.0, 0.0, -10.0] },
+          { id: 'L6', pos: [53.0, 0.0, -10.0] }
+        ],
+        getGround(x, z) {
+          if (Math.hypot(x, z) <= 28.0) return 0.0;
+          if (Math.hypot(x - 70.0, z) <= 28.0) return 0.0;
+          if (x >= 26.0 && x <= 44.0 && Math.abs(z) <= 2.0) return 0.0;
+          return null;
+        },
+        jumpPads: [
+          { pos: [20.0, 0.0, 18.0], radius: 1.0, target: [70.0, 0.0, 0.0], vy: 14.0, vHoriz: 24.0 },
+          { pos: [50.0, 0.0, -18.0], radius: 1.0, target: [0.0, 0.0, 0.0], vy: 14.0, vHoriz: 24.0 }
+        ],
+        charms: [{ id: 'C1', pos: [35.0, 0.0, 0.0] }]
+      },
+      3: {
+        name: 'Đảo Chuông',
+        duration_s: 360,
+        lanterns: [
+          { id: 'L1', pos: [0.0, 6.0, 6.0] },
+          { id: 'L2', pos: [18.0, 3.0, 10.0] },
+          { id: 'L3', pos: [-18.0, 3.0, 10.0] },
+          { id: 'L4', pos: [35.0, 0.0, -10.0] },
+          { id: 'L5', pos: [-35.0, 0.0, -10.0] },
+          { id: 'L6', pos: [20.0, 0.0, -35.0] },
+          { id: 'L7', pos: [-20.0, 0.0, -35.0] }
+        ],
+        getGround(x, z) {
+          const r = Math.hypot(x, z);
+          if (r > 45.0 || r <= 2.0) return null;
+          if (r <= 8.0) return 6.0;
+          if (r >= 12.0 && r <= 24.0 && z > 0) return 3.0;
+          if (r >= 24.0 && r <= 30.0) {
+            const checkR = (deg) => {
+              const rad = (deg * Math.PI) / 180;
+              const cross = Math.abs(x * Math.sin(rad) - z * Math.cos(rad));
+              if (cross <= 1.5) return 3.0 * ((30.0 - r) / 6.0);
+              return null;
+            };
+            const r1 = checkR(30); if (r1 !== null) return r1;
+            const r2 = checkR(150); if (r2 !== null) return r2;
+          }
+          return 0.0;
+        },
+        jumpPads: [
+          { pos: [0.0, 3.0, 13.0], radius: 1.0, fixedDir: [0.0, -1.0], vy: 12.0, vHoriz: 8.0 }
+        ],
+        charms: [
+          { id: 'C1', pos: [30.0, 0.0, 25.0] },
+          { id: 'C2', pos: [-30.0, 0.0, 25.0] }
+        ]
+      }
+    };
+
+    // Client Game State
+    let currentNight = 1;
+    let isPaused = false;
+    let gameState = {
+      state: 'playing',
+      score: 0,
+      timeLeft: 300,
+      player: {
+        pos: [0, 0, 0],
+        vel: [0, 0, 0],
+        grounded: true,
+        flames: 3,
+        carried: 0,
+        invulnTimer: 0,
+        dashCd: 0,
+        dashTimer: 0,
+        dashDir: [0, 1],
+        pulseCd: 0,
+        charmTimer: 0,
+        isLaunched: false,
+        respawnWait: 0
+      },
+      lanterns: [],
+      motes: [],
+      shades: [],
+      drifters: [],
+      charms: []
+    };
+
+    // Three.js Scene Setup
     const container = document.getElementById('canvas-container');
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x0E1430);
@@ -486,41 +575,47 @@
     mayGroup.add(miniLight);
     scene.add(mayGroup);
 
-    // Environment Meshes Container
+    // Pulse effect mesh
+    const pulseMesh = new THREE.Mesh(
+      new THREE.SphereGeometry(5.0, 32, 16),
+      new THREE.MeshBasicMaterial({ color: 0xF2C14E, wireframe: true, transparent: true, opacity: 0 })
+    );
+    scene.add(pulseMesh);
+    let pulseAnimTimer = 0;
+
     let envGroup = new THREE.Group();
     scene.add(envGroup);
 
-    let lanternObjects = [];
-    let moteMeshes = new Map();
-    let shadeMeshes = new Map();
-    let drifterMeshes = new Map();
-    let charmMeshes = new Map();
+    let lanternMeshes = [];
+    let moteMeshes = [];
+    let shadeMeshes = [];
+    let drifterMeshes = [];
+    let charmMeshes = [];
 
-    function rebuildScene(nightNum) {
+    function initNight(nightNum) {
+      currentNight = nightNum;
+      const map = MAPS_DATA[nightNum];
+
       scene.remove(envGroup);
       envGroup = new THREE.Group();
       scene.add(envGroup);
 
-      lanternObjects = [];
-      moteMeshes.clear();
-      shadeMeshes.clear();
-      drifterMeshes.clear();
-      charmMeshes.clear();
+      lanternMeshes = [];
+      moteMeshes = [];
+      shadeMeshes = [];
+      drifterMeshes = [];
+      charmMeshes = [];
 
-      const map = MAPS[nightNum];
       document.getElementById('island-title').innerText = `ĐẢO ĐÈN LỒNG — ĐÊM ${nightNum}`;
       document.getElementById('island-subtitle').innerText = `${map.name} · Người giữ đèn Mây`;
 
+      // Build Map 3D Meshes
       if (nightNum === 1) {
-        // Round island
-        const islandGeo = new THREE.CylinderGeometry(40, 42, 4, 64);
-        const islandMat = new THREE.MeshStandardMaterial({ color: 0x2F5D50, roughness: 0.85 });
-        const islandMesh = new THREE.Mesh(islandGeo, islandMat);
-        islandMesh.position.y = -2;
-        envGroup.add(islandMesh);
+        const island = new THREE.Mesh(new THREE.CylinderGeometry(40, 42, 4, 64), new THREE.MeshStandardMaterial({ color: 0x2F5D50 }));
+        island.position.y = -2;
+        envGroup.add(island);
       } else if (nightNum === 2) {
-        // Island A & B
-        const mat = new THREE.MeshStandardMaterial({ color: 0x2F5D50, roughness: 0.85 });
+        const mat = new THREE.MeshStandardMaterial({ color: 0x2F5D50 });
         const isA = new THREE.Mesh(new THREE.CylinderGeometry(28, 30, 4, 48), mat);
         isA.position.set(0, -2, 0);
         envGroup.add(isA);
@@ -529,43 +624,42 @@
         isB.position.set(70, -2, 0);
         envGroup.add(isB);
 
-        // Bamboo bridge (6B4A2F)
-        const bridgeGeo = new THREE.BoxGeometry(22, 0.4, 4);
-        const bridgeMat = new THREE.MeshStandardMaterial({ color: 0x6B4A2F });
-        const bridge = new THREE.Mesh(bridgeGeo, bridgeMat);
+        const bridge = new THREE.Mesh(new THREE.BoxGeometry(22, 0.4, 4), new THREE.MeshStandardMaterial({ color: 0x6B4A2F }));
         bridge.position.set(35, -0.2, 0);
         envGroup.add(bridge);
 
-        // Jump pads
         map.jumpPads.forEach(pad => {
-          const padMesh = new THREE.Mesh(new THREE.CylinderGeometry(1, 1.1, 0.2, 24), new THREE.MeshStandardMaterial({ color: 0xF2C14E }));
-          padMesh.position.set(pad.pos[0], 0.1, pad.pos[2]);
-          envGroup.add(padMesh);
+          const pMesh = new THREE.Mesh(new THREE.CylinderGeometry(1, 1.1, 0.2, 24), new THREE.MeshStandardMaterial({ color: 0xF2C14E }));
+          pMesh.position.set(pad.pos[0], 0.1, pad.pos[2]);
+          envGroup.add(pMesh);
         });
       } else if (nightNum === 3) {
-        // Tier 0
         const t0 = new THREE.Mesh(new THREE.CylinderGeometry(45, 47, 4, 64), new THREE.MeshStandardMaterial({ color: 0x2F5D50 }));
         t0.position.set(0, -2, 0);
         envGroup.add(t0);
 
-        // Tier 1 (Y=3)
         const t1 = new THREE.Mesh(new THREE.CylinderGeometry(24, 24, 3, 32), new THREE.MeshStandardMaterial({ color: 0x2F5D50 }));
         t1.position.set(0, 1.5, 12);
         envGroup.add(t1);
 
-        // Tier 2 (Y=6)
         const t2 = new THREE.Mesh(new THREE.CylinderGeometry(8, 8, 3, 32), new THREE.MeshStandardMaterial({ color: 0xC9B48A }));
         t2.position.set(0, 4.5, 0);
         envGroup.add(t2);
 
-        // Bell Tower (cylinder r=2, height 8m)
         const tower = new THREE.Mesh(new THREE.CylinderGeometry(2, 2.2, 8, 24), new THREE.MeshStandardMaterial({ color: 0x6B4A2F }));
         tower.position.set(0, 10, 0);
         envGroup.add(tower);
       }
 
       // Build Lanterns
-      map.lanterns.forEach(l => {
+      gameState.lanterns = map.lanterns.map(l => ({
+        id: l.id,
+        pos: [...l.pos],
+        lit: false,
+        deposited: 0
+      }));
+
+      gameState.lanterns.forEach(l => {
         const g = new THREE.Group();
         g.position.set(l.pos[0], l.pos[1], l.pos[2]);
 
@@ -586,43 +680,98 @@
         g.add(light);
 
         envGroup.add(g);
-        lanternObjects.push({ id: l.id, group: g, bulb, light });
+        lanternMeshes.push({ id: l.id, data: l, bulb, light });
       });
+
+      // Charms
+      gameState.charms = (map.charms || []).map(c => ({
+        id: c.id,
+        pos: [...c.pos],
+        available: true,
+        respawnTimer: 0
+      }));
+      gameState.charms.forEach(c => {
+        const mesh = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.7, 0.1), new THREE.MeshStandardMaterial({ color: 0xC8102E, emissive: 0xF2C14E }));
+        mesh.position.set(c.pos[0], c.pos[1] + 0.6, c.pos[2]);
+        envGroup.add(mesh);
+        charmMeshes.push({ data: c, mesh });
+      });
+
+      // Spawn Initial Motes (20)
+      gameState.motes = [];
+      for (let i = 0; i < 20; i++) {
+        const r = 8 + Math.random() * 26;
+        const angle = Math.random() * Math.PI * 2;
+        const x = r * Math.cos(angle);
+        const z = r * Math.sin(angle);
+        const y = map.getGround(x, z) || 0;
+
+        const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), new THREE.MeshBasicMaterial({ color: 0xFFF6C2 }));
+        mesh.position.set(x, y + 0.6, z);
+        envGroup.add(mesh);
+        gameState.motes.push({ id: `M${i+1}`, pos: [x, y, z], mesh });
+      }
+
+      // Spawn Shades
+      gameState.shades = [];
+      for (let i = 0; i < 2; i++) {
+        const r = 32 + Math.random() * 5;
+        const angle = i * Math.PI + Math.random() * 0.5;
+        const x = r * Math.cos(angle);
+        const z = r * Math.sin(angle);
+
+        const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.7, 16, 16), new THREE.MeshStandardMaterial({ color: 0x120A1A, emissive: 0x7A3CFF }));
+        mesh.position.set(x, 0.8, z);
+        envGroup.add(mesh);
+        gameState.shades.push({ id: `S${i+1}`, pos: [x, 0, z], mesh, state: 'chase', stunnedTimer: 0 });
+      }
+
+      // Spawn Drifter (Night 2 and 3)
+      gameState.drifters = [];
+      if (nightNum >= 2) {
+        const mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.35, 1.2, 8), new THREE.MeshStandardMaterial({ color: 0x8FA3B8, emissive: 0x1B2350 }));
+        mesh.position.set(25, 1.2, 10);
+        mesh.rotation.z = Math.PI / 4;
+        envGroup.add(mesh);
+        gameState.drifters.push({ id: 'D1', pos: [25, 1, 10], mesh, state: 'idle', stolen: 0 });
+      }
+
+      // Reset Player
+      gameState.player = {
+        pos: [0, 0, 0],
+        vel: [0, 0, 0],
+        grounded: true,
+        flames: 3,
+        carried: 0,
+        invulnTimer: 0,
+        dashCd: 0,
+        dashTimer: 0,
+        dashDir: [0, 1],
+        pulseCd: 0,
+        charmTimer: 0,
+        isLaunched: false,
+        respawnWait: 0
+      };
+      gameState.timeLeft = map.duration_s;
+      gameState.state = 'playing';
+      isPaused = false;
     }
 
-    rebuildScene(currentNight);
+    initNight(currentNight);
 
-    // Input listening
-    const inputState = {
-      move: [0, 0],
-      cam_yaw_deg: 0,
-      interact: false,
-      pulse: false,
-      dash: false,
-      jump: false,
-      pause: false
-    };
-
+    // Controls
     const keys = {};
     window.addEventListener('keydown', (e) => {
       const k = e.key.toLowerCase();
       keys[k] = true;
-      if (k === 'e') inputState.interact = true;
-      if (k === 'q') inputState.pulse = true;
-      if (e.shiftKey || k === 'shift') inputState.dash = true;
-      if (k === ' ' || k === 'space') inputState.jump = true;
-      if (k === 'escape' || k === 'p') {
-        inputState.pause = true;
-      }
+      if (k === 'e') triggerInteract();
+      if (k === 'q') triggerPulse();
+      if (e.shiftKey || k === 'shift') triggerDash();
+      if (k === ' ' || k === 'space') triggerJump();
+      if (k === 'escape' || k === 'p') togglePause();
     });
     window.addEventListener('keyup', (e) => {
-      const k = e.key.toLowerCase();
-      keys[k] = false;
-      if (k === 'e') inputState.interact = false;
-      if (k === 'q') inputState.pulse = false;
-      if (k === 'shift') inputState.dash = false;
-      if (k === ' ' || k === 'space') inputState.jump = false;
-      if (k === 'escape' || k === 'p') inputState.pause = false;
+      keys[e.key.toLowerCase()] = false;
     });
 
     let camYaw = 0;
@@ -637,236 +786,427 @@
       }
     });
 
-    // Pause UI handling
-    document.getElementById('btn-resume').addEventListener('click', () => {
-      engine.is_paused = false;
-      engine.state = 'playing';
-      document.getElementById('pause-screen').classList.remove('active');
-    });
+    function togglePause() {
+      isPaused = !isPaused;
+      document.getElementById('pause-screen').classList.toggle('active', isPaused);
+    }
+    document.getElementById('btn-resume').addEventListener('click', togglePause);
     document.getElementById('btn-restart-night').addEventListener('click', () => {
-      engine = new GameEngine({ seed: Date.now(), night: currentNight });
-      rebuildScene(currentNight);
-      document.getElementById('pause-screen').classList.remove('active');
+      initNight(currentNight);
+      togglePause();
     });
     document.getElementById('btn-switch-night').addEventListener('click', () => {
-      currentNight = (currentNight % 3) + 1;
-      engine = new GameEngine({ seed: Date.now(), night: currentNight });
-      rebuildScene(currentNight);
-      document.getElementById('pause-screen').classList.remove('active');
+      initNight((currentNight % 3) + 1);
+      togglePause();
     });
     document.getElementById('btn-next-night').addEventListener('click', () => {
-      currentNight = Math.min(3, currentNight + 1);
-      engine = new GameEngine({ seed: Date.now(), night: currentNight });
-      rebuildScene(currentNight);
+      initNight(Math.min(3, currentNight + 1));
       document.getElementById('result-screen').classList.remove('active');
     });
     document.getElementById('btn-retry').addEventListener('click', () => {
-      engine = new GameEngine({ seed: Date.now(), night: currentNight });
-      rebuildScene(currentNight);
+      initNight(currentNight);
       document.getElementById('result-screen').classList.remove('active');
     });
 
-    // Main animation loop synced with engine ticks
-    let accumulator = 0;
+    function triggerJump() {
+      if (gameState.state !== 'playing' || !gameState.player.grounded) return;
+      gameState.player.vel[1] = 7.0;
+      gameState.player.grounded = false;
+    }
+
+    function triggerDash() {
+      if (gameState.state !== 'playing' || gameState.player.dashCd > 0 || gameState.player.dashTimer > 0) return;
+      gameState.player.dashTimer = 0.2; // 12 ticks
+      gameState.player.dashCd = gameState.player.charmTimer > 0 ? 0 : 1.5;
+      AudioSys.playDash();
+    }
+
+    function triggerPulse() {
+      if (gameState.state !== 'playing' || gameState.player.pulseCd > 0 || gameState.player.carried < 3) return;
+      gameState.player.carried -= 3;
+      gameState.player.pulseCd = 3.0;
+      AudioSys.playPulse();
+
+      pulseMesh.position.set(gameState.player.pos[0], gameState.player.pos[1] + 0.8, gameState.player.pos[2]);
+      pulseAnimTimer = 0.35;
+      pulseMesh.material.opacity = 0.8;
+
+      // Stun & push shades
+      gameState.shades.forEach(s => {
+        const d = Math.hypot(s.pos[0] - gameState.player.pos[0], s.pos[2] - gameState.player.pos[2]);
+        if (d <= 5.0) {
+          s.stunnedTimer = 2.0; // 120 ticks
+          s.state = 'stunned';
+          gameState.score += 5;
+
+          const dx = s.pos[0] - gameState.player.pos[0];
+          const dz = s.pos[2] - gameState.player.pos[2];
+          const len = Math.hypot(dx, dz) || 1;
+          s.pos[0] += (dx / len) * 4.0;
+          s.pos[2] += (dz / len) * 4.0;
+        }
+      });
+
+      // Drifters
+      gameState.drifters.forEach(d => {
+        const dist = Math.hypot(d.pos[0] - gameState.player.pos[0], d.pos[2] - gameState.player.pos[2]);
+        if (dist <= 5.0) {
+          if (d.state === 'chase') d.state = 'flee';
+          else if (d.state === 'flee' && d.stolen > 0) {
+            d.stolen = 0; // drop stolen
+          }
+        }
+      });
+    }
+
+    function triggerInteract() {
+      if (gameState.state !== 'playing' || gameState.player.carried <= 0) return;
+      let target = null;
+      let minDist = Infinity;
+      gameState.lanterns.forEach(l => {
+        if (!l.lit) {
+          const d = Math.hypot(gameState.player.pos[0] - l.pos[0], gameState.player.pos[2] - l.pos[2]);
+          if (d <= 2.0 && d < minDist) {
+            minDist = d;
+            target = l;
+          }
+        }
+      });
+
+      if (target) {
+        const needed = 10 - target.deposited;
+        const amount = Math.min(gameState.player.carried, needed);
+        if (amount > 0) {
+          gameState.player.carried -= amount;
+          target.deposited += amount;
+          AudioSys.playChime(520, 0.3);
+
+          if (target.deposited >= 10) {
+            target.lit = true;
+            gameState.score += 100;
+            AudioSys.playChime(880, 0.6);
+
+            const lObj = lanternMeshes.find(m => m.id === target.id);
+            if (lObj) {
+              lObj.bulb.material.color.setHex(0xFFE9B0);
+              lObj.light.intensity = 2.5;
+            }
+
+            if (gameState.lanterns.every(l => l.lit)) {
+              gameState.state = 'won';
+              gameState.score += Math.floor(gameState.timeLeft) * 2 + gameState.player.flames * 50;
+              showResult(true);
+            }
+          }
+        }
+      }
+    }
+
+    function showResult(won, reason = '') {
+      document.getElementById('result-title').innerText = won ? 'CHIẾN THẮNG!' : 'BÓNG ĐÊM NUỐT CHỬNG';
+      document.getElementById('result-title').style.color = won ? '#F2C14E' : '#FF5A5F';
+      document.getElementById('result-desc').innerText = won
+        ? (currentNight === 3 ? 'Bình minh rực rỡ đã trở lại trên toàn cõi Đảo Đèn Lồng!' : `Mây đã thắp sáng tất cả ngọn đèn Đêm ${currentNight}!`)
+        : (reason === 'dawn' ? 'Bình minh đã đến nhưng các ngọn đèn chưa kịp thắp...' : 'Mây đã kiệt sức trước lũ Bóng Mực...');
+      document.getElementById('final-score').innerText = gameState.score;
+      document.getElementById('btn-next-night').style.display = won && currentNight < 3 ? 'inline-block' : 'none';
+      document.getElementById('result-screen').classList.add('active');
+    }
+
+    // Animation Loop
     let lastTime = performance.now();
-    const TICK_DURATION = 1 / 60;
+    function animate(time) {
+      requestAnimationFrame(animate);
 
-    function gameLoop(time) {
-      requestAnimationFrame(gameLoop);
-
-      const dt = Math.min((time - lastTime) / 1000, 0.1);
+      const dt = Math.min((time - lastTime) / 1000, 0.08);
       lastTime = time;
-      accumulator += dt;
 
-      // Read real-time movement keys
-      let mx = 0, mz = 0;
-      if (keys['w'] || keys['arrowup']) mz += 1;
-      if (keys['s'] || keys['arrowdown']) mz -= 1;
-      if (keys['a'] || keys['arrowleft']) mx -= 1;
-      if (keys['d'] || keys['arrowright']) mx += 1;
-      inputState.move = [mx, mz];
-      inputState.cam_yaw_deg = (camYaw * 180) / Math.PI;
+      if (!isPaused && gameState.state === 'playing') {
+        gameState.timeLeft = Math.max(0, gameState.timeLeft - dt);
+        if (gameState.timeLeft <= 0) {
+          gameState.state = 'lost';
+          showResult(false, 'dawn');
+        }
 
-      while (accumulator >= TICK_DURATION) {
-        accumulator -= TICK_DURATION;
+        if (gameState.player.invulnTimer > 0) gameState.player.invulnTimer -= dt;
+        if (gameState.player.dashCd > 0) gameState.player.dashCd -= dt;
+        if (gameState.player.pulseCd > 0) gameState.player.pulseCd -= dt;
+        if (gameState.player.charmTimer > 0) gameState.player.charmTimer -= dt;
 
-        const events = engine.step(inputState);
-        events.forEach(ev => {
-          if (ev.name === 'dash') AudioSys.playDash();
-          if (ev.name === 'pulse') AudioSys.playPulse();
-          if (ev.name === 'player_hit') AudioSys.playHit();
-          if (ev.name === 'mote_picked') AudioSys.playChime(650, 0.2);
-          if (ev.name === 'lantern_lit') AudioSys.playChime(880, 0.5);
-          if (ev.name === 'paused') {
-            document.getElementById('pause-screen').classList.add('active');
+        // Player movement
+        let mx = 0, mz = 0;
+        if (keys['w'] || keys['arrowup']) mz += 1;
+        if (keys['s'] || keys['arrowdown']) mz -= 1;
+        if (keys['a'] || keys['arrowleft']) mx -= 1;
+        if (keys['d'] || keys['arrowright']) mx += 1;
+
+        const moveSpeed = gameState.player.charmTimer > 0 ? 7.2 : 6.0;
+
+        if (mx !== 0 || mz !== 0) {
+          const len = Math.hypot(mx, mz);
+          const nx = mx / len;
+          const nz = mz / len;
+
+          const worldX = -nx * Math.cos(camYaw) + nz * Math.sin(camYaw);
+          const worldZ = nx * Math.sin(camYaw) + nz * Math.cos(camYaw);
+          gameState.player.dashDir = [worldX, worldZ];
+
+          if (gameState.player.dashTimer > 0) {
+            gameState.player.pos[0] += worldX * 14.0 * dt;
+            gameState.player.pos[2] += worldZ * 14.0 * dt;
+          } else if (!gameState.player.isLaunched) {
+            gameState.player.pos[0] += worldX * moveSpeed * dt;
+            gameState.player.pos[2] += worldZ * moveSpeed * dt;
           }
-          if (ev.name === 'resumed') {
-            document.getElementById('pause-screen').classList.remove('active');
+          mayGroup.rotation.y = Math.atan2(worldX, worldZ);
+        } else if (gameState.player.dashTimer > 0) {
+          gameState.player.pos[0] += gameState.player.dashDir[0] * 14.0 * dt;
+          gameState.player.pos[2] += gameState.player.dashDir[1] * 14.0 * dt;
+        }
+
+        if (gameState.player.dashTimer > 0) {
+          gameState.player.dashTimer -= dt;
+        } else if (gameState.player.isLaunched) {
+          gameState.player.pos[0] += gameState.player.vel[0] * dt;
+          gameState.player.pos[2] += gameState.player.vel[2] * dt;
+          gameState.player.vel[1] += -20.0 * dt;
+          gameState.player.pos[1] += gameState.player.vel[1] * dt;
+        } else if (!gameState.player.grounded) {
+          gameState.player.vel[1] += -20.0 * dt;
+          gameState.player.pos[1] += gameState.player.vel[1] * dt;
+        }
+
+        // Ground & Fall check
+        const ground = MAPS_DATA[currentNight].getGround(gameState.player.pos[0], gameState.player.pos[2]);
+        if (ground === null) {
+          gameState.player.grounded = false;
+          if (gameState.player.dashTimer <= 0) {
+            gameState.player.vel[1] += -20.0 * dt;
+            gameState.player.pos[1] += gameState.player.vel[1] * dt;
           }
-          if (ev.name === 'game_over') {
-            const isWon = ev.data.result === 'won';
-            document.getElementById('result-title').innerText = isWon ? 'CHIẾN THẮNG!' : 'BÓNG ĐÊM NUỐT CHỬNG';
-            document.getElementById('result-title').style.color = isWon ? '#F2C14E' : '#FF5A5F';
-            document.getElementById('result-desc').innerText = isWon 
-              ? (currentNight === 3 ? 'Bình minh rực rỡ đã trở lại trên toàn cõi Đảo Đèn Lồng!' : `Mây đã hoàn thành xuất sắc Đêm ${currentNight}!`)
-              : (ev.data.reason === 'dawn' ? 'Bình minh đã đến nhưng các ngọn đèn chưa kịp thắp...' : 'Mây đã kiệt sức trước lũ Bóng Mực...');
-            document.getElementById('final-score').innerText = engine.score;
-            document.getElementById('btn-next-night').style.display = isWon && currentNight < 3 ? 'inline-block' : 'none';
-            document.getElementById('result-screen').classList.add('active');
+
+          if (gameState.player.pos[1] < -10.0) {
+            // Fall off!
+            gameState.player.flames -= 1;
+            gameState.player.carried = 0;
+            AudioSys.playHit();
+
+            if (gameState.player.flames <= 0) {
+              gameState.state = 'lost';
+              showResult(false, 'flames');
+            } else {
+              gameState.player.pos = [0, 0, 0];
+              gameState.player.vel = [0, 0, 0];
+              gameState.player.grounded = true;
+              gameState.player.invulnTimer = 1.5;
+            }
+          }
+        } else {
+          if (gameState.player.pos[1] <= ground) {
+            gameState.player.pos[1] = ground;
+            gameState.player.vel[1] = 0;
+            gameState.player.grounded = true;
+            gameState.player.isLaunched = false;
+          }
+
+          // Jump pads trigger
+          MAPS_DATA[currentNight].jumpPads.forEach(pad => {
+            const d = Math.hypot(gameState.player.pos[0] - pad.pos[0], gameState.player.pos[2] - pad.pos[2]);
+            if (d <= pad.radius && gameState.player.grounded) {
+              gameState.player.isLaunched = true;
+              gameState.player.grounded = false;
+              gameState.player.vel[1] = pad.vy;
+              if (pad.target) {
+                const dx = pad.target[0] - pad.pos[0];
+                const dz = pad.target[2] - pad.pos[2];
+                const len = Math.hypot(dx, dz) || 1;
+                gameState.player.vel[0] = (dx / len) * pad.vHoriz;
+                gameState.player.vel[2] = (dz / len) * pad.vHoriz;
+              } else if (pad.fixedDir) {
+                gameState.player.vel[0] = pad.fixedDir[0] * pad.vHoriz;
+                gameState.player.vel[2] = pad.fixedDir[1] * pad.vHoriz;
+              }
+            }
+          });
+        }
+
+        mayGroup.position.set(gameState.player.pos[0], gameState.player.pos[1], gameState.player.pos[2]);
+
+        // Pickup Motes
+        for (let i = gameState.motes.length - 1; i >= 0; i--) {
+          const m = gameState.motes[i];
+          const d = Math.hypot(m.pos[0] - gameState.player.pos[0], m.pos[2] - gameState.player.pos[2]);
+          if (d <= 1.0 && Math.abs(m.pos[1] - gameState.player.pos[1]) <= 1.5 && gameState.player.carried < 10) {
+            gameState.player.carried += 1;
+            gameState.score += 10;
+            envGroup.remove(m.mesh);
+            gameState.motes.splice(i, 1);
+            AudioSys.playChime(650, 0.2);
+          } else {
+            m.mesh.position.y = m.pos[1] + 0.6 + Math.sin(time * 0.003 + i) * 0.12;
+          }
+        }
+
+        // Pickup Charms
+        gameState.charms.forEach(c => {
+          if (c.available) {
+            const d = Math.hypot(c.pos[0] - gameState.player.pos[0], c.pos[2] - gameState.player.pos[2]);
+            if (d <= 1.0) {
+              c.available = false;
+              c.respawnTimer = 45; // 2700 ticks = 45s
+              gameState.player.charmTimer = 10; // 600 ticks = 10s
+              AudioSys.playChime(950, 0.4);
+            }
+          } else {
+            c.respawnTimer -= dt;
+            if (c.respawnTimer <= 0) c.available = true;
           }
         });
-      }
+        charmMeshes.forEach(cm => {
+          cm.mesh.visible = cm.data.available;
+          if (cm.data.available) cm.mesh.rotation.y += dt * 2;
+        });
 
-      // Update 3D Visual Positions
-      const snap = engine.getSnapshot();
+        // Shades AI
+        gameState.shades.forEach(s => {
+          if (s.stunnedTimer > 0) {
+            s.stunnedTimer -= dt;
+            s.mesh.rotation.y += dt * 8;
+            s.mesh.material.emissive.setHex(0x3A3450);
+          } else {
+            s.state = 'chase';
+            s.mesh.material.emissive.setHex(0x7A3CFF);
 
-      // Mây position
-      mayGroup.position.set(snap.player.pos[0], snap.player.pos[1], snap.player.pos[2]);
-      if (snap.player.vel[0] !== 0 || snap.player.vel[2] !== 0) {
-        mayGroup.rotation.y = Math.atan2(snap.player.vel[0], snap.player.vel[2]);
-      }
+            const dx = gameState.player.pos[0] - s.pos[0];
+            const dz = gameState.player.pos[2] - s.pos[2];
+            const d = Math.hypot(dx, dz);
+            if (d > 0.01) {
+              const speed = currentNight === 3 ? 4.5 : 4.0;
+              const nextX = s.pos[0] + (dx / d) * speed * dt;
+              const nextZ = s.pos[2] + (dz / d) * speed * dt;
 
-      // Lantern lights & ambient formula
-      let litCount = 0;
-      snap.lanterns.forEach(l => {
-        if (l.lit) litCount++;
-        const lObj = lanternObjects.find(o => o.id === l.id);
-        if (lObj) {
-          lObj.bulb.material.color.setHex(l.lit ? 0xFFE9B0 : 0x5B5F6E);
-          lObj.light.intensity = l.lit ? 2.5 : 0;
-        }
-      });
-      ambientLight.intensity = 0.15 + 0.55 * (litCount / snap.lanterns.length);
+              let blocked = false;
+              gameState.lanterns.forEach(l => {
+                if (l.lit && Math.hypot(nextX - l.pos[0], nextZ - l.pos[2]) < 6.0) blocked = true;
+              });
+              if (!blocked) {
+                s.pos[0] = nextX;
+                s.pos[2] = nextZ;
+              }
+            }
+            s.mesh.position.set(s.pos[0], 0.8, s.pos[2]);
 
-      // Motes sync
-      const currentMoteIds = new Set(snap.motes.map(m => m.id));
-      for (const [id, meshObj] of moteMeshes) {
-        if (!currentMoteIds.has(id)) {
-          envGroup.remove(meshObj.mesh);
-          moteMeshes.delete(id);
-        }
-      }
-      snap.motes.forEach((m, idx) => {
-        let mObj = moteMeshes.get(m.id);
-        if (!mObj) {
-          const color = m.kind === 'dropped' ? 0xFF5A5F : 0xFFF6C2;
-          const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), new THREE.MeshBasicMaterial({ color }));
-          envGroup.add(mesh);
-          mObj = { mesh };
-          moteMeshes.set(m.id, mObj);
-        }
-        mObj.mesh.position.set(m.pos[0], m.pos[1] + 0.5 + Math.sin(time * 0.003 + idx) * 0.1, m.pos[2]);
-      });
+            // Hit player
+            if (gameState.player.invulnTimer <= 0 && d <= 1.0) {
+              gameState.player.flames -= 1;
+              gameState.player.invulnTimer = 1.5;
+              const dropped = Math.floor(gameState.player.carried * 0.5);
+              gameState.player.carried -= dropped;
+              AudioSys.playHit();
 
-      // Shades sync
-      const currentShadeIds = new Set(snap.shades.map(s => s.id));
-      for (const [id, mesh] of shadeMeshes) {
-        if (!currentShadeIds.has(id)) {
-          envGroup.remove(mesh);
-          shadeMeshes.delete(id);
-        }
-      }
-      snap.shades.forEach(s => {
-        let mesh = shadeMeshes.get(s.id);
-        if (!mesh) {
-          mesh = new THREE.Mesh(new THREE.SphereGeometry(0.7, 16, 16), new THREE.MeshStandardMaterial({ color: 0x120A1A, emissive: 0x7A3CFF }));
-          envGroup.add(mesh);
-          shadeMeshes.set(s.id, mesh);
-        }
-        mesh.position.set(s.pos[0], s.pos[1] + 0.8, s.pos[2]);
-        if (s.state === 'stunned') {
-          mesh.material.emissive.setHex(0x3A3450);
-          mesh.rotation.y += 0.1;
+              if (gameState.player.flames <= 0) {
+                gameState.state = 'lost';
+                showResult(false, 'flames');
+              }
+            }
+          }
+        });
+
+        // Drifters AI
+        gameState.drifters.forEach(d => {
+          const distToPlayer = Math.hypot(d.pos[0] - gameState.player.pos[0], d.pos[2] - gameState.player.pos[2]);
+          if (d.state === 'idle') {
+            if (gameState.player.carried >= 5 && distToPlayer <= 15.0) d.state = 'chase';
+          } else if (d.state === 'chase') {
+            if (gameState.player.carried < 5 || distToPlayer > 18.0) d.state = 'idle';
+            else {
+              const dx = gameState.player.pos[0] - d.pos[0];
+              const dz = gameState.player.pos[2] - d.pos[2];
+              const len = Math.hypot(dx, dz) || 1;
+              d.pos[0] += (dx / len) * 7.0 * dt;
+              d.pos[2] += (dz / len) * 7.0 * dt;
+
+              if (distToPlayer <= 1.2) {
+                const stolen = Math.min(3, gameState.player.carried);
+                gameState.player.carried -= stolen;
+                d.stolen = stolen;
+                d.state = 'flee';
+                d.fleeTimer = 4.0;
+              }
+            }
+          } else if (d.state === 'flee') {
+            const dx = d.pos[0] - gameState.player.pos[0];
+            const dz = d.pos[2] - gameState.player.pos[2];
+            const len = Math.hypot(dx, dz) || 1;
+            d.pos[0] += (dx / len) * 7.0 * dt;
+            d.pos[2] += (dz / len) * 7.0 * dt;
+            d.fleeTimer -= dt;
+            if (d.fleeTimer <= 0) d.mesh.visible = false;
+          }
+          d.mesh.position.set(d.pos[0], 1.2, d.pos[2]);
+        });
+
+        // Pulse mesh animation
+        if (pulseAnimTimer > 0) {
+          pulseAnimTimer -= dt;
+          const scale = 1 + (0.35 - pulseAnimTimer) * 2;
+          pulseMesh.scale.set(scale, scale, scale);
+          pulseMesh.material.opacity = pulseAnimTimer / 0.35;
         } else {
-          mesh.material.emissive.setHex(0x7A3CFF);
+          pulseMesh.material.opacity = 0;
         }
-      });
 
-      // Drifters sync
-      const currentDrifterIds = new Set(snap.drifters.map(d => d.id));
-      for (const [id, mesh] of drifterMeshes) {
-        if (!currentDrifterIds.has(id)) {
-          envGroup.remove(mesh);
-          drifterMeshes.delete(id);
+        // Camera follow
+        const camDistance = 9.0;
+        const camHeight = 5.5;
+        camera.position.x = gameState.player.pos[0] - Math.sin(camYaw) * camDistance;
+        camera.position.z = gameState.player.pos[2] - Math.cos(camYaw) * camDistance;
+        camera.position.y = gameState.player.pos[1] + camHeight;
+        camera.lookAt(gameState.player.pos[0], gameState.player.pos[1] + 1.2, gameState.player.pos[2]);
+
+        // Update HUD
+        const mins = Math.floor(gameState.timeLeft / 60);
+        const secs = Math.floor(gameState.timeLeft % 60);
+        const timerBadge = document.getElementById('timer-badge');
+        timerBadge.innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        if (gameState.timeLeft <= 30) timerBadge.classList.add('danger');
+        else timerBadge.classList.remove('danger');
+
+        const litCount = gameState.lanterns.filter(l => l.lit).length;
+        document.getElementById('lanterns-lit').innerText = `${litCount} / ${gameState.lanterns.length}`;
+        document.getElementById('score-val').innerText = gameState.score;
+
+        ambientLight.intensity = 0.15 + 0.55 * (litCount / gameState.lanterns.length);
+
+        const flameIcons = document.querySelectorAll('.flame-icon');
+        flameIcons.forEach((fi, idx) => {
+          if (idx < gameState.player.flames) fi.classList.remove('lost');
+          else fi.classList.add('lost');
+        });
+
+        const slots = document.querySelectorAll('.mote-slot');
+        slots.forEach((s, idx) => {
+          if (idx < gameState.player.carried) s.classList.add('filled');
+          else s.classList.remove('filled');
+        });
+
+        document.getElementById('dash-cd-overlay').style.height = `${(Math.max(0, gameState.player.dashCd) / 1.5) * 100}%`;
+        document.getElementById('pulse-cd-overlay').style.height = `${(Math.max(0, gameState.player.pulseCd) / 3.0) * 100}%`;
+
+        let nearLantern = null;
+        gameState.lanterns.forEach(l => {
+          if (!l.lit) {
+            const d = Math.hypot(gameState.player.pos[0] - l.pos[0], gameState.player.pos[2] - l.pos[2]);
+            if (d <= 2.0) nearLantern = l;
+          }
+        });
+        const promptBanner = document.getElementById('prompt-banner');
+        if (nearLantern) {
+          promptBanner.innerText = `E — Nạp ánh sáng (${nearLantern.deposited}/10)`;
+          promptBanner.classList.add('visible');
+        } else {
+          promptBanner.classList.remove('visible');
         }
-      }
-      snap.drifters.forEach(d => {
-        let mesh = drifterMeshes.get(d.id);
-        if (!mesh) {
-          mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.4, 1.2, 8), new THREE.MeshStandardMaterial({ color: 0x8FA3B8, emissive: 0x1B2350 }));
-          envGroup.add(mesh);
-          drifterMeshes.set(d.id, mesh);
-        }
-        mesh.position.set(d.pos[0], d.pos[1] + 1.2, d.pos[2]);
-        mesh.rotation.z = Math.PI / 4;
-        mesh.rotation.y += 0.05;
-      });
-
-      // Charms sync
-      snap.charms.forEach(c => {
-        let mesh = charmMeshes.get(c.id);
-        if (!mesh) {
-          mesh = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.6, 0.1), new THREE.MeshStandardMaterial({ color: 0xC8102E, emissive: 0xF2C14E }));
-          envGroup.add(mesh);
-          charmMeshes.set(c.id, mesh);
-        }
-        mesh.visible = c.available;
-      });
-
-      // Camera follow
-      const camDistance = 9.0;
-      const camHeight = 5.5;
-      camera.position.x = snap.player.pos[0] - Math.sin(camYaw) * camDistance;
-      camera.position.z = snap.player.pos[2] - Math.cos(camYaw) * camDistance;
-      camera.position.y = snap.player.pos[1] + camHeight;
-      camera.lookAt(snap.player.pos[0], snap.player.pos[1] + 1.2, snap.player.pos[2]);
-
-      // Update HUD Elements
-      const mins = Math.floor(snap.time_left_s / 60);
-      const secs = Math.floor(snap.time_left_s % 60);
-      const timerBadge = document.getElementById('timer-badge');
-      timerBadge.innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-      if (snap.time_left_s <= 30) {
-        timerBadge.classList.add('danger');
-      } else {
-        timerBadge.classList.remove('danger');
-      }
-
-      document.getElementById('lanterns-lit').innerText = `${litCount} / ${snap.lanterns.length}`;
-      document.getElementById('score-val').innerText = snap.score;
-
-      // Flames
-      const flameIcons = document.querySelectorAll('.flame-icon');
-      flameIcons.forEach((fi, idx) => {
-        if (idx < snap.player.flames) fi.classList.remove('lost');
-        else fi.classList.add('lost');
-      });
-
-      // 10-slot mote bar
-      const slots = document.querySelectorAll('.mote-slot');
-      slots.forEach((s, idx) => {
-        if (idx < snap.player.carried) s.classList.add('filled');
-        else s.classList.remove('filled');
-      });
-
-      // Cooldown overlays
-      document.getElementById('dash-cd-overlay').style.height = `${(snap.player.dash_cd_s / 1.5) * 100}%`;
-      document.getElementById('pulse-cd-overlay').style.height = `${(snap.player.pulse_cd_s / 3.0) * 100}%`;
-
-      // Lantern prompt check
-      let nearLantern = null;
-      snap.lanterns.forEach(l => {
-        if (!l.lit) {
-          const d = Math.hypot(snap.player.pos[0] - l.pos[0], snap.player.pos[2] - l.pos[2]);
-          if (d <= 2.0) nearLantern = l;
-        }
-      });
-      const promptBanner = document.getElementById('prompt-banner');
-      if (nearLantern) {
-        promptBanner.innerText = `E — Nạp ánh sáng (${nearLantern.deposited}/10)`;
-        promptBanner.classList.add('visible');
-      } else {
-        promptBanner.classList.remove('visible');
       }
 
       renderer.render(scene, camera);
@@ -878,7 +1218,7 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    requestAnimationFrame(gameLoop);
+    requestAnimationFrame(animate);
   </script>
 </body>
 </html>
