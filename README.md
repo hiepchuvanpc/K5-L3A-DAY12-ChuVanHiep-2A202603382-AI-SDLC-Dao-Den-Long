@@ -96,10 +96,25 @@ node src/cli/headless.js --seed 42 --night 2 \
 
 ---
 
-## 7. Tài liệu & Bằng chứng SDLC
+## 7. Tài liệu & Bằng chứng SDLC (Rubric B, C, D)
+- **[Báo Cáo SDLC & Đánh Giá Tổng Hợp Phase 2](docs/notes/report-phase2.md)**: Ma trận truy vết yêu cầu (Traceability Matrix), Đánh giá AI, Token, Phân tích lỗi, Retro, và Kịch bản quay video demo.
 - [Đặc tả & Giả định Phase 2 (Ticket-02)](docs/notes/phase-2-spec.md)
 - [Đặc tả & Giả định Phase 1 (PRD-0)](docs/notes/phase-1-spec.md)
-- [Nhật ký dùng AI & Đánh giá](docs/notes/ai-log.md)
-- [Bằng chứng kiểm chứng Phase 2](docs/proof/phase-2/)
-- [Quy ước cho AI Agent (AGENTS.md)](AGENTS.md)
+- [Nhật ký Thay đổi (CHANGELOG.md)](CHANGELOG.md)
+- [Nhật ký dùng AI & Đánh giá (ai-log.md)](docs/notes/ai-log.md)
+- [Bằng chứng kiểm chứng Phase 2](docs/proof/phase-2/) (Gồm snapshots JSONL, báo cáo tính tất định và đo đạc hiệu năng)
+- [Bằng chứng kiểm chứng Phase 1](docs/proof/phase-1/)
+- [Quy ước & Harness AI Agent (AGENTS.md)](AGENTS.md)
 - [Bản quyền & Tài sản (CREDITS.md)](CREDITS.md)
+
+---
+
+## 8. Trạng thái Nộp bài & Tags
+- Tag Phase 1: `phase-1` (Hoàn thành Đêm 1 theo Test Contract v1.0)
+- Tag Phase 2: `phase-2` (Hoàn thành Ticket-02 theo Test Contract v1.1)
+- Lệnh tự kiểm tra:
+  ```bash
+  npm test
+  node scripts/generate_proofs_phase2.js
+  git tag -l
+  ```

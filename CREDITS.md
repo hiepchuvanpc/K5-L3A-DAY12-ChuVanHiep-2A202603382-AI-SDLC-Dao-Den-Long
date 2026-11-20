@@ -1,9 +1,9 @@
 # CREDITS & LICENSE
 
 ## Dự án: Đảo Đèn Lồng
-- **Tác giả / Sinh viên**: Chu Văn Hiệp
+- **Tác giả / Sinh viên**: Chử Văn Hiệp
 - **MSSV**: 2A202603382
-- **Lớp / Khóa**: L3A - Day 12 AI SDLC
+- **Lớp / Khóa**: K5 - L3A - Day 12 AI SDLC
 
 ## Giấy phép
 Mã nguồn được phát hành dưới giấy phép MIT License.
