@@ -678,29 +678,64 @@
         const bridge = new THREE.Mesh(new THREE.BoxGeometry(22, 0.4, 4), new THREE.MeshStandardMaterial({ color: 0x6B4A2F }));
         bridge.position.set(35, -0.2, 0);
         envGroup.add(bridge);
-
-        map.jumpPads.forEach(pad => {
-          const pMesh = new THREE.Mesh(new THREE.CylinderGeometry(1, 1.1, 0.2, 24), new THREE.MeshStandardMaterial({ color: 0xF2C14E }));
-          pMesh.position.set(pad.pos[0], 0.1, pad.pos[2]);
-          envGroup.add(pMesh);
-        });
       } else if (nightNum === 3) {
-        const t0 = new THREE.Mesh(new THREE.CylinderGeometry(45, 47, 4, 64), new THREE.MeshStandardMaterial({ color: 0x2F5D50 }));
+        // Tier 0 (Y=0) base island
+        const t0 = new THREE.Mesh(new THREE.CylinderGeometry(45, 47, 4, 64), new THREE.MeshStandardMaterial({ color: 0x244B3F }));
         t0.position.set(0, -2, 0);
         envGroup.add(t0);
 
+        // Tier 1 (Y=3) crescent terrace for z > 0
         const t1 = new THREE.Mesh(new THREE.CylinderGeometry(24, 24, 3, 32), new THREE.MeshStandardMaterial({ color: 0x2F5D50 }));
         t1.position.set(0, 1.5, 12);
         envGroup.add(t1);
 
-        const t2 = new THREE.Mesh(new THREE.CylinderGeometry(8, 8, 3, 32), new THREE.MeshStandardMaterial({ color: 0xC9B48A }));
+        // Tier 2 (Y=6) top platform
+        const t2 = new THREE.Mesh(new THREE.CylinderGeometry(8, 8, 3, 32), new THREE.MeshStandardMaterial({ color: 0x5C4E3C }));
         t2.position.set(0, 4.5, 0);
         envGroup.add(t2);
 
+        // Bell Tower
         const tower = new THREE.Mesh(new THREE.CylinderGeometry(2, 2.2, 8, 24), new THREE.MeshStandardMaterial({ color: 0x6B4A2F }));
         tower.position.set(0, 10, 0);
         envGroup.add(tower);
+
+        // 2 Visible Ramps (30 deg and 150 deg) connecting Tier 0 to Tier 1
+        const rampGeo = new THREE.BoxGeometry(3.0, 0.35, 6.7);
+        const rampMat = new THREE.MeshStandardMaterial({ color: 0x8C6747, roughness: 0.8 });
+
+        // Ramp 1 (30 deg)
+        const ramp1 = new THREE.Mesh(rampGeo, rampMat);
+        ramp1.position.set(23.38, 1.5, 13.5);
+        ramp1.rotation.y = -Math.PI / 6;
+        ramp1.rotation.x = 0.46; // sloped incline
+        envGroup.add(ramp1);
+
+        // Ramp 2 (150 deg)
+        const ramp2 = new THREE.Mesh(rampGeo, rampMat);
+        ramp2.position.set(-23.38, 1.5, 13.5);
+        ramp2.rotation.y = Math.PI / 6;
+        ramp2.rotation.x = 0.46;
+        envGroup.add(ramp2);
       }
+
+      // Build Jump Pads (Render on any night that has them)
+      map.jumpPads.forEach(pad => {
+        const pGroup = new THREE.Group();
+        pGroup.position.set(pad.pos[0], pad.pos[1] + 0.08, pad.pos[2]);
+
+        const pRing = new THREE.Mesh(
+          new THREE.CylinderGeometry(pad.radius, pad.radius + 0.15, 0.16, 24),
+          new THREE.MeshStandardMaterial({ color: 0xF2C14E, emissive: 0xD97706, emissiveIntensity: 0.9 })
+        );
+        pGroup.add(pRing);
+
+        const pLight = new THREE.PointLight(0xF2C14E, 1.2, 5);
+        pLight.position.y = 0.4;
+        pGroup.add(pLight);
+
+        pGroup.collider = { type: 'cylinder', radius: pad.radius, height: 0.2 };
+        envGroup.add(pGroup);
+      });
 
       // Build Lanterns
       gameState.lanterns = map.lanterns.map(l => ({
@@ -734,11 +769,12 @@
         light.position.y = 2.4;
         g.add(light);
 
+        g.collider = { type: 'cylinder', radius: 1.0, height: 2.4, interactRadius: 2.0 };
         envGroup.add(g);
         lanternMeshes.push({ id: l.id, data: l, bulb, light });
       });
 
-      // Charms
+      // Charms (Bùa Gió — Taoist Wind Charm Talisman)
       gameState.charms = (map.charms || []).map(c => ({
         id: c.id,
         pos: [...c.pos],
@@ -746,10 +782,28 @@
         respawnTimer: 0
       }));
       gameState.charms.forEach(c => {
-        const mesh = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.7, 0.1), new THREE.MeshStandardMaterial({ color: 0xC8102E, emissive: 0xF2C14E }));
-        mesh.position.set(c.pos[0], c.pos[1] + 0.6, c.pos[2]);
-        envGroup.add(mesh);
-        charmMeshes.push({ data: c, mesh });
+        const cGroup = new THREE.Group();
+        cGroup.position.set(c.pos[0], c.pos[1] + 0.6, c.pos[2]);
+
+        // Red Talisman parchment with golden borders
+        const parchment = new THREE.Mesh(
+          new THREE.BoxGeometry(0.45, 0.75, 0.08),
+          new THREE.MeshStandardMaterial({ color: 0xC8102E, emissive: 0x8B0000, roughness: 0.3 })
+        );
+        cGroup.add(parchment);
+
+        const rune = new THREE.Mesh(
+          new THREE.BoxGeometry(0.28, 0.55, 0.09),
+          new THREE.MeshStandardMaterial({ color: 0xF2C14E, emissive: 0xD97706, emissiveIntensity: 0.8 })
+        );
+        cGroup.add(rune);
+
+        const charmLight = new THREE.PointLight(0xFF4500, 1.4, 5.0);
+        cGroup.add(charmLight);
+
+        cGroup.collider = { type: 'box', size: [0.45, 0.75, 0.08], pickupRadius: 1.0 };
+        envGroup.add(cGroup);
+        charmMeshes.push({ data: c, mesh: cGroup });
       });
 
       // Spawn Initial Motes (20)
@@ -951,16 +1005,15 @@
     });
 
     let camYaw = 0;
-    let isMouseDown = false;
-    let lastMouseX = 0;
-    window.addEventListener('mousedown', (e) => { isMouseDown = true; lastMouseX = e.clientX; });
-    window.addEventListener('mouseup', () => { isMouseDown = false; });
+    let lastMouseX = null;
     window.addEventListener('mousemove', (e) => {
-      if (isMouseDown) {
-        camYaw -= (e.clientX - lastMouseX) * 0.005;
-        lastMouseX = e.clientX;
+      if (lastMouseX !== null) {
+        const deltaX = e.clientX - lastMouseX;
+        camYaw -= deltaX * 0.0035;
       }
+      lastMouseX = e.clientX;
     });
+    window.addEventListener('mouseleave', () => { lastMouseX = null; });
 
     function switchNightDirect(nightNum) {
       isPaused = false;
@@ -1120,7 +1173,7 @@
         if (gameState.player.pulseCd > 0) gameState.player.pulseCd -= dt;
         if (gameState.player.charmTimer > 0) gameState.player.charmTimer -= dt;
 
-        // Player movement
+        // 1. Horizontal Player Movement
         let mx = 0, mz = 0;
         if (keys['w'] || keys['arrowup']) mz += 1;
         if (keys['s'] || keys['arrowdown']) mz -= 1;
@@ -1142,8 +1195,20 @@
             gameState.player.pos[0] += worldX * 14.0 * dt;
             gameState.player.pos[2] += worldZ * 14.0 * dt;
           } else if (!gameState.player.isLaunched) {
-            gameState.player.pos[0] += worldX * moveSpeed * dt;
-            gameState.player.pos[2] += worldZ * moveSpeed * dt;
+            // Cliff wall collision on tiered maps (Night 3): prevent walking into cliffs
+            let canMove = true;
+            if (currentNight === 3) {
+              const testX = gameState.player.pos[0] + worldX * moveSpeed * dt;
+              const testZ = gameState.player.pos[2] + worldZ * moveSpeed * dt;
+              const targetGround = MAPS_DATA[3].getGround(testX, testZ);
+              if (targetGround !== null && (targetGround - gameState.player.pos[1]) > 0.6) {
+                canMove = false; // blocked by vertical cliff wall
+              }
+            }
+            if (canMove) {
+              gameState.player.pos[0] += worldX * moveSpeed * dt;
+              gameState.player.pos[2] += worldZ * moveSpeed * dt;
+            }
           }
           mayGroup.rotation.y = Math.atan2(worldX, worldZ);
         } else if (gameState.player.dashTimer > 0) {
@@ -1151,29 +1216,42 @@
           gameState.player.pos[2] += gameState.player.dashDir[1] * 14.0 * dt;
         }
 
+        // 2. Dash countdown
         if (gameState.player.dashTimer > 0) {
           gameState.player.dashTimer -= dt;
-        } else if (gameState.player.isLaunched) {
-          gameState.player.pos[0] += gameState.player.vel[0] * dt;
-          gameState.player.pos[2] += gameState.player.vel[2] * dt;
-          gameState.player.vel[1] += -20.0 * dt;
-          gameState.player.pos[1] += gameState.player.vel[1] * dt;
-        } else if (!gameState.player.grounded) {
-          gameState.player.vel[1] += -20.0 * dt;
-          gameState.player.pos[1] += gameState.player.vel[1] * dt;
         }
 
-        // Ground & Fall check
+        // 3. Jump Pad Launch horizontal movement
+        if (gameState.player.isLaunched) {
+          gameState.player.pos[0] += gameState.player.vel[0] * dt;
+          gameState.player.pos[2] += gameState.player.vel[2] * dt;
+        }
+
+        // 4. Ground height check
         const ground = MAPS_DATA[currentNight].getGround(gameState.player.pos[0], gameState.player.pos[2]);
-        if (ground === null) {
-          gameState.player.grounded = false;
-          if (gameState.player.dashTimer <= 0) {
+
+        // 5. Vertical Gravity (applied EXACTLY ONCE per frame when in air)
+        if (gameState.player.dashTimer <= 0) {
+          if (ground === null || gameState.player.pos[1] > ground + 0.001) {
+            gameState.player.grounded = false;
             gameState.player.vel[1] += -20.0 * dt;
             gameState.player.pos[1] += gameState.player.vel[1] * dt;
           }
+        }
 
+        // 6. Ground landing & fall off check
+        if (ground !== null) {
+          if (gameState.player.pos[1] <= ground) {
+            gameState.player.pos[1] = ground;
+            gameState.player.vel[1] = 0;
+            gameState.player.vel[0] = 0;
+            gameState.player.vel[2] = 0;
+            gameState.player.grounded = true;
+            gameState.player.isLaunched = false;
+          }
+        } else {
+          // Falling into void
           if (gameState.player.pos[1] < -10.0) {
-            // Fall off!
             gameState.player.flames -= 1;
             gameState.player.carried = 0;
             AudioSys.playHit();
@@ -1185,37 +1263,32 @@
               gameState.player.pos = currentNight === 3 ? [0, 0, -22.0] : [0, 0, 0];
               gameState.player.vel = [0, 0, 0];
               gameState.player.grounded = true;
+              gameState.player.isLaunched = false;
               gameState.player.invulnTimer = 1.5;
             }
           }
-        } else {
-          if (gameState.player.pos[1] <= ground) {
-            gameState.player.pos[1] = ground;
-            gameState.player.vel[1] = 0;
-            gameState.player.grounded = true;
-            gameState.player.isLaunched = false;
-          }
-
-          // Jump pads trigger
-          MAPS_DATA[currentNight].jumpPads.forEach(pad => {
-            const d = Math.hypot(gameState.player.pos[0] - pad.pos[0], gameState.player.pos[2] - pad.pos[2]);
-            if (d <= pad.radius && gameState.player.grounded) {
-              gameState.player.isLaunched = true;
-              gameState.player.grounded = false;
-              gameState.player.vel[1] = pad.vy;
-              if (pad.target) {
-                const dx = pad.target[0] - pad.pos[0];
-                const dz = pad.target[2] - pad.pos[2];
-                const len = Math.hypot(dx, dz) || 1;
-                gameState.player.vel[0] = (dx / len) * pad.vHoriz;
-                gameState.player.vel[2] = (dz / len) * pad.vHoriz;
-              } else if (pad.fixedDir) {
-                gameState.player.vel[0] = pad.fixedDir[0] * pad.vHoriz;
-                gameState.player.vel[2] = pad.fixedDir[1] * pad.vHoriz;
-              }
-            }
-          });
         }
+
+        // 7. Jump pads trigger
+        MAPS_DATA[currentNight].jumpPads.forEach(pad => {
+          const d = Math.hypot(gameState.player.pos[0] - pad.pos[0], gameState.player.pos[2] - pad.pos[2]);
+          if (d <= pad.radius && gameState.player.grounded) {
+            gameState.player.isLaunched = true;
+            gameState.player.grounded = false;
+            gameState.player.vel[1] = pad.vy;
+            AudioSys.playDash();
+            if (pad.target) {
+              const dx = pad.target[0] - pad.pos[0];
+              const dz = pad.target[2] - pad.pos[2];
+              const len = Math.hypot(dx, dz) || 1;
+              gameState.player.vel[0] = (dx / len) * pad.vHoriz;
+              gameState.player.vel[2] = (dz / len) * pad.vHoriz;
+            } else if (pad.fixedDir) {
+              gameState.player.vel[0] = pad.fixedDir[0] * pad.vHoriz;
+              gameState.player.vel[2] = pad.fixedDir[1] * pad.vHoriz;
+            }
+          }
+        });
 
         mayGroup.position.set(gameState.player.pos[0], gameState.player.pos[1], gameState.player.pos[2]);
 
@@ -1246,7 +1319,7 @@
           }
         }
 
-        // Pickup Charms
+        // Pickup Charms (Bùa Gió — Wind Charm)
         gameState.charms.forEach(c => {
           if (c.available) {
             const d = Math.hypot(c.pos[0] - gameState.player.pos[0], c.pos[2] - gameState.player.pos[2]);
@@ -1255,6 +1328,11 @@
               c.respawnTimer = 45; // 2700 ticks = 45s
               gameState.player.charmTimer = 10; // 600 ticks = 10s
               AudioSys.playChime(950, 0.4);
+
+              const pb = document.getElementById('prompt-banner');
+              pb.innerText = '⚡ BÙA GIÓ: Tốc độ 7.2 m/s & Lướt Shift liên tục (10s)!';
+              pb.classList.add('visible');
+              setTimeout(() => { pb.classList.remove('visible'); }, 3500);
             }
           } else {
             c.respawnTimer -= dt;

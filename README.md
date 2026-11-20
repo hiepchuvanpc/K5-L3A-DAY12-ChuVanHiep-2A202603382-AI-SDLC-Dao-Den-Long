@@ -32,7 +32,13 @@ npm test
 
 ---
 
-## 3. Điều khiển (Controls)
+## 3. Điều khiển & Hệ thống Camera (Controls & Camera)
+
+- **Kiểu Camera**: **Góc nhìn thứ ba tự do (Third-Person Free-Rotate Camera)** theo sau Mây, khoảng cách 9m, cao 5.5m.
+- **Điều khiển Camera**: **Chỉ cần rê chuột ngang là xoay góc nhìn mượt mà** quanh Mây (không cần giữ chuột).
+- **Ràng buộc Headless**: Vector di chuyển của người chơi được biến đổi tự động theo góc xoay camera `cam_yaw_deg` theo đúng công thức chuẩn trong Test Contract:
+  $$worldX = -nx \cdot \cos(yaw) + nz \cdot \sin(yaw)$$
+  $$worldZ = nx \cdot \sin(yaw) + nz \cdot \cos(yaw)$$
 
 | Phím / Thao tác | Hành động |
 |---|---|
@@ -41,21 +47,29 @@ npm test
 | <kbd>Space</kbd> | **Nhảy** ($v_y = 7.0$ m/s, trọng lực $-20$ m/s²) |
 | <kbd>E</kbd> | Thắp đom đóm vào Đèn Lồng Lớn (trong bán kính $\le 2.0$m) |
 | <kbd>Q</kbd> | Kích hoạt kỹ năng **Tỏa sáng (Pulse)** làm choáng và đẩy lùi Bóng Mực/Gió Lạc |
-| <kbd>P</kbd> hoặc <kbd>Esc</kbd> | **Tạm dừng (Pause)** game / Mở menu tùy chọn |
-| Giữ chuột trái & kéo | Xoay góc nhìn camera 3D quanh Mây |
+| <kbd>P</kbd> hoặc <kbd>Esc</kbd> | **Tạm dừng (Pause)** game / Mở menu đổi màn |
+| Di chuyển chuột | Xoay góc nhìn camera 3D tự do quanh nhân vật |
 
 ---
 
-## 4. Cách tính điểm chuẩn hóa (Scoring System)
+## 4. Kiến trúc Collider Component & Cơ chế Vật lý (Physics & Colliders)
 
-Điểm số được tính toán tự động và đồng bộ giữa chế độ Headless và 3D Web:
-- **Nạp đom đóm vào đèn:** +10 điểm / đom đóm.
-- **Thắp sáng Đèn Lồng Lớn:** +100 điểm / đèn.
-- **Làm choáng Bóng Mực / Trúng Tỏa Sáng:** +5 điểm / con mỗi lần.
-- **Thưởng chiến thắng mỗi Đêm:**
-  - Thời gian còn lại: $+ \lfloor \text{time\_left\_s} \rfloor \times 2$ điểm.
-  - Ngọn lửa sinh mệnh còn lại: $+ 50 \times \text{flames}$ điểm.
-- **Tổng điểm game:** Tổng điểm các Đêm đã vượt qua.
+Mọi thực thể trong game đều được đóng gói theo kiến trúc **Collider Component**:
+- **Mây (Player)**: Capsule Collider ($r = 0.4\text{m}, h = 1.6\text{m}$).
+- **Đèn Lồng (Lantern)**: Cylinder Collider ($r = 1.0\text{m}, h = 2.4\text{m}$, bán kính tương tác $2.0\text{m}$, vùng an toàn $6.0\text{m}$).
+- **Đom đóm (Mote)**: Sphere Collider ($r = 0.25\text{m}$, bán kính nhặt $1.0\text{m}$).
+- **Bóng Mực (Shade)**: Sphere Collider ($r = 0.72\text{m}$, bán kính gây sát thương $1.0\text{m}$). Tích hợp lực đẩy phân tách đàn (Boids Separation) chống gộp quái.
+- **Bùa Gió (Wind Charm)**: Box Collider ($[0.45, 0.75, 0.08]$, bán kính nhặt $1.0\text{m}$) mô phỏng lá bùa Đạo gia viền vàng. **Tác dụng khi nhặt**: Tăng tốc độ chạy lên $7.2\text{ m/s}$ và cho phép **Lướt (Shift) liên tục không có hồi chiêu** trong 10 giây (600 tick).
+- **Bục nhảy (Jump Pad)**: Cylinder Collider ($r = 1.0\text{m}, h = 0.2\text{m}$) với lực đẩy $v_y = 14\text{ m/s}, v_{horiz} = 24\text{ m/s}$ giúp Mây bay vút sang đảo đối diện hoặc lên tầng cao.
+
+---
+
+## 5. Lý giải thông số Tuning trong `game.contract.json` (Tuning Rationale)
+
+- **`lantern_cost` = 10 đom đóm**: Sức chứa túi đom đóm của Mây là 10. Đêm 1 có 5 đèn (tổng 50 đom đóm). Mức 10 đòi hỏi người chơi phải nạp đầy túi ít nhất 5 chuyến, tạo nên nhịp điệu gom đốm sáng vừa vặn với thời gian 300 giây.
+- **`pulse_cost` = 3 đom đóm**: Tiêu tốn 30% sức chứa tối đa. Đủ rẻ để người chơi kích hoạt thoát hiểm khi bị Bóng Mực bủa vây, nhưng đủ đắt để phải cân nhắc giữa việc nạp đèn hay xua đuổi kẻ địch.
+- **`pulse_radius` = 5.0m & `pulse_stun_s` = 2.0s**: Đảm bảo vùng an toàn đủ rộng đẩy quái lùi 4m để Mây kịp lướt chạy.
+- **`shade_speed` = 4.0 m/s (Đêm 3: 4.5 m/s)**: Thấp hơn tốc độ chạy của Mây (6.0 m/s), tạo cảm giác hồi hộp rượt đuổi nhưng vẫn công bằng cho người chơi.
 
 ---
 
