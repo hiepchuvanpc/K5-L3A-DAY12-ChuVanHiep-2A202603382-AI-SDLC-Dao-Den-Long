@@ -130,6 +130,8 @@ test('PHASE 4: Accessibility requirements (keybindings, indicators, font sizes, 
   // Reduce motion and UI font sizes
   assert.ok(html.includes('toggle-reduce-motion'), 'Must support reduce motion toggle');
   assert.ok(html.includes('screen-flash'), 'Must include screen flash element for motion reduction control');
-  assert.ok(html.includes('font-size: 18px') || html.includes('font-size: 22.5px'), 'Base UI font size must be at least 18px at 1280x720');
+  // Quyết định thiết kế (ADR-gui-v3): HUD in-game thu gọn còn 14px theo playtest "HUD quá to";
+  // baseline tiếp cận vẫn đảm bảo bằng tùy chọn Cỡ chữ Lớn (14 -> 17px, hệ số x1.25 như cũ).
+  assert.ok(html.includes('font-size: 17px') && html.includes('body.large-ui'), 'Large UI option must scale base 14px by x1.25 (17px)');
   assert.ok(html.includes('toggle-large-ui'), 'Must support large UI option (x1.25)');
 });

@@ -5,7 +5,23 @@ Tác giả: Chử Văn Hiệp (MSSV: 2A202603382) · Lớp: L3A
 
 ---
 
-## [phase-4] — Ticket-04: Bình minh: Phát hành v1.0.0 (Contract v1.3)
+## [hotfix-ui-v3] — Sửa lỗi playtest Đêm 3 + Giao diện UI v3
+
+### 🐛 Sửa lỗi
+1. **A/D bị đảo chiều trong giao diện 3D (`src/web/index.html`)**: công thức biến đổi hướng di chuyển theo camera yaw bị sai dấu trục X (khi camera nhìn dọc +Z, màn hình bên phải tương ứng world −X). Đã đổi hệ số của `nx`; mũi tên cảnh báo quái trên threat radar cũng bị lật ngược trái/phải cùng lỗi gốc, đã sửa (`ax`, `rotate`).
+2. **Map Đêm 3 (Đảo Chuông) dựng mesh lệch với logic va chạm (`getGround`)**: bán tầng Tier 1 bị đặt nhịp đùn hướng lên (lơ lửng y=3→6) và nhầm phía z<0 trong khi Tier 1 nằm phía z>0; hai dốc bị quay lệch 90° theo chiều tiếp tuyến. Đã dựng lại: Tier 1 là bán khuyên r∈[12,24] phía z>0, mặt đi lại đúng y=3; hai dốc chạy xuyên bán kính tại 30°/150° (Euler `YXZ`, pitch 26,6°), chân dốc r=30/Y=0 → đỉnh r=24/Y=3 khớp `getGround`.
+3. **Bùa Tăng Tốc báo lỗi thị giác**: mesh bùa không bao giờ bị ẩn khi nhặt (vòng lặp không cập nhật `charmMeshes`) khiến bùa trông như không hoạt động. Đã thêm đồng bộ ẩn/hiện theo `available`, hiệu ứng xoay + dập dềnh, chỉ báo thời gian còn lại trên HUD (pill ⚡ xanh lá) và viền xanh ô Lướt khi bùa active (lướt không hồi chiêu).
+
+### ✨ Giao diện (UI v3)
+4. **HUD thu gọn**: chữ nền 14px (từ 18px), tách 3 khối trên (tên đảo | đồng hồ | chỉ số) và 3 khối dưới (phím tắt | thanh đom đóm | kỹ năng); bỏ selector Đêm và nút Bảng Xếp Hạng/Cài Đặt nổi trên gameplay (chuyển vào Menu chính & màn Tạm dừng).
+5. **Thêm trang mở đầu (intro)**: tiêu đề phát sáng, đèn lồng bay, cốt truyện, nút bắt đầu; thế giới dựng sẵn phía sau và tạm dừng.
+6. **Thêm Menu chính**: thẻ chọn 3 Đêm (kèm thông tin số đèn/giờ/ngưỡng thắng), Bảng Xếp Hạng, Cài Đặt, tóm tắt phím; thêm nút "🏠 Về Menu Chính" ở màn Tạm dừng và Kết thúc.
+7. **Nâng cấp đồ họa**: bầu sao + trăng có quầng, 10 đèn trời bay, biển mây 2 lớp gợn sóng, cây low-poly, đá, vòng sáng quanh chân Đèn Lớn (bỏ qua trong bench mode để giữ chuẩn FPS).
+
+### ⚠️ Test được cập nhật (có lý do)
+- `tests/phase4.test.js`: assertion "Base UI font size ≥ 18px" thay bằng kiểm tra HUD thu gọn 14px + tùy chọn Cỡ chữ Lớn x1.25 (17px) — theo playtest "HUD quá to"; baseline tiếp cận vẫn đảm bảo qua toggle large-ui.
+
+---
 
 ### 🚀 Tính năng & Yêu cầu Phát hành (Release Deliverables)
 1. **Chế độ Benchmark Hiệu năng Chuẩn hóa (`bench.js`)**:

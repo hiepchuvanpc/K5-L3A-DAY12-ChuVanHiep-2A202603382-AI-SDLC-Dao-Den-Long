@@ -6,23 +6,20 @@
   <title>Đảo Đèn Lồng — 3D Fairytale Action (Release v1.0.0)</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-    body, html { width: 100%; height: 100%; overflow: hidden; background: #0B0F28; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #F5F1E6; font-size: 18px; }
-    body.large-ui { font-size: 22.5px; }
-    body.large-ui .stat-card { padding: 14px 24px; }
-    body.large-ui .title-banner h1 { font-size: 24px; }
-    body.large-ui .title-banner p { font-size: 20px; }
-    body.large-ui .metric-value { font-size: 24px; }
-    body.large-ui .timer-badge { font-size: 26px; }
-    body.large-ui .btn-action { font-size: 22px; padding: 14px 34px; }
-    body.large-ui .btn-night-tab { font-size: 20px; padding: 8px 16px; }
-    body.large-ui .controls-hint { font-size: 20px; }
-    body.large-ui .key-badge { font-size: 20px; }
-    body.large-ui .prompt-banner { font-size: 22px; padding: 10px 26px; }
-    body.large-ui table { font-size: 20px; }
-    body.large-ui .modal-desc { font-size: 20px; }
-    body.large-ui .input-field { font-size: 20px; }
+    body, html { width: 100%; height: 100%; overflow: hidden; background: #0B0F28; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #F5F1E6; font-size: 14px; }
+    body.large-ui { font-size: 17px; }
+    body.large-ui .metric-value { font-size: 17px; }
+    body.large-ui .timer-badge { font-size: 20px; }
+    body.large-ui .btn-action { font-size: 16px; }
+    body.large-ui .controls-hint { font-size: 13px; }
+    body.large-ui .key-badge { font-size: 12px; }
+    body.large-ui table { font-size: 15px; }
+    body.large-ui .modal-desc { font-size: 15px; }
 
     #canvas-container { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; cursor: crosshair; }
+
+    /* Ẩn HUD khi đang ở intro/menu */
+    body.menu-open #hud, body.menu-open #threat-radar, body.menu-open #screen-flash { display: none; }
 
     /* Screen Flash overlay for hit response */
     #screen-flash {
@@ -31,11 +28,11 @@
       pointer-events: none;
       z-index: 50;
       opacity: 0;
-      background: radial-gradient(circle, transparent 35%, rgba(255, 90, 95, 0.45) 100%);
+      background: radial-gradient(circle, transparent 40%, rgba(255, 90, 95, 0.45) 100%);
       transition: opacity 0.12s ease-out;
     }
 
-    /* HUD overlay */
+    /* ===== HUD in-game (compact) ===== */
     #hud {
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -44,58 +41,50 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 16px 20px;
+      padding: 10px 14px;
+      font-size: 13px;
     }
 
     .top-bar {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
+      gap: 10px;
     }
 
-    .stat-card {
-      background: rgba(14, 20, 48, 0.88);
-      border: 1px solid rgba(242, 193, 78, 0.35);
-      border-radius: 12px;
-      padding: 10px 18px;
-      backdrop-filter: blur(8px);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      pointer-events: auto;
+    .title-banner {
+      background: rgba(14, 20, 48, 0.72);
+      border: 1px solid rgba(242, 193, 78, 0.3);
+      border-radius: 8px;
+      padding: 5px 12px;
+      backdrop-filter: blur(4px);
     }
-
     .title-banner h1 {
-      font-size: 20px;
+      font-size: 13px;
       font-weight: 700;
       color: #F2C14E;
-      text-shadow: 0 0 10px rgba(242, 193, 78, 0.6);
-      letter-spacing: 1px;
+      text-shadow: 0 0 8px rgba(242, 193, 78, 0.5);
+      letter-spacing: 0.5px;
+      white-space: nowrap;
     }
-
     .title-banner p {
-      font-size: 18px;
+      font-size: 10px;
       color: #8FA3B8;
-      margin-top: 2px;
-    }
-
-    .top-center {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      margin-top: 1px;
     }
 
     .timer-badge {
-      background: rgba(14, 20, 48, 0.88);
+      background: rgba(14, 20, 48, 0.8);
       border: 1px solid rgba(242, 193, 78, 0.4);
-      border-radius: 20px;
-      padding: 6px 20px;
-      font-size: 22px;
+      border-radius: 14px;
+      padding: 3px 16px;
+      font-size: 17px;
       font-weight: bold;
       color: #F5F1E6;
-      letter-spacing: 2px;
+      letter-spacing: 1.5px;
       transition: color 0.3s;
+      height: fit-content;
+      backdrop-filter: blur(4px);
     }
     .timer-badge.danger {
       color: #FF5A5F;
@@ -114,27 +103,33 @@
 
     .hud-metrics {
       display: flex;
-      gap: 14px;
+      gap: 12px;
+      align-items: flex-start;
+      background: rgba(14, 20, 48, 0.72);
+      border: 1px solid rgba(242, 193, 78, 0.3);
+      border-radius: 8px;
+      padding: 5px 14px;
+      backdrop-filter: blur(4px);
     }
 
-    .metric {
+    .hud-cell {
       display: flex;
       flex-direction: column;
       align-items: center;
+      gap: 1px;
     }
-    .metric-label { font-size: 14px; text-transform: uppercase; color: #8FA3B8; letter-spacing: 0.5px; }
-    .metric-value { font-size: 20px; font-weight: bold; color: #F5F1E6; margin-top: 2px; }
-    .metric-value.accent { color: #F2C14E; text-shadow: 0 0 10px rgba(242, 193, 78, 0.6); }
+    .hud-label { font-size: 9px; text-transform: uppercase; color: #8FA3B8; letter-spacing: 0.5px; white-space: nowrap; }
+    .metric-value { font-size: 15px; font-weight: bold; color: #F5F1E6; white-space: nowrap; }
+    .metric-value.accent { color: #F2C14E; text-shadow: 0 0 8px rgba(242, 193, 78, 0.5); }
 
     .flames-container {
       display: flex;
-      gap: 6px;
+      gap: 3px;
       align-items: center;
-      margin-top: 4px;
     }
     .flame-icon {
-      font-size: 20px;
-      filter: drop-shadow(0 0 6px #C8102E);
+      font-size: 14px;
+      filter: drop-shadow(0 0 5px #C8102E);
       transition: transform 0.3s, opacity 0.3s;
     }
     .flame-icon.lost {
@@ -143,49 +138,73 @@
       transform: scale(0.8);
     }
 
+    .bottom-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 10px;
+    }
+
     .bottom-center {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 6px;
+      gap: 5px;
+      flex: 1;
+      margin-bottom: 2px;
+    }
+
+    .charm-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(14, 20, 48, 0.85);
+      border: 1px solid #4ADE80;
+      border-radius: 14px;
+      padding: 3px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #4ADE80;
+      text-shadow: 0 0 6px rgba(74, 222, 128, 0.6);
+      backdrop-filter: blur(4px);
+      box-shadow: 0 0 14px rgba(74, 222, 128, 0.25);
     }
 
     .mote-bar-container {
-      background: rgba(14, 20, 48, 0.88);
+      background: rgba(14, 20, 48, 0.8);
       border: 1px solid rgba(242, 193, 78, 0.4);
-      border-radius: 12px;
-      padding: 8px 16px;
+      border-radius: 9px;
+      padding: 5px 12px;
       display: flex;
       align-items: center;
-      gap: 5px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
-      max-width: 520px;
+      gap: 4px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+      max-width: 420px;
       flex-wrap: wrap;
       justify-content: center;
     }
     .mote-slot {
-      width: 15px;
-      height: 24px;
-      border-radius: 4px;
+      width: 9px;
+      height: 16px;
+      border-radius: 3px;
       border: 1px solid rgba(242, 193, 78, 0.3);
       background: rgba(255, 255, 255, 0.05);
       transition: background 0.2s, box-shadow 0.2s;
     }
     .mote-slot.filled {
       background: linear-gradient(180deg, #FFF6C2, #F2C14E);
-      box-shadow: 0 0 8px #F2C14E;
+      box-shadow: 0 0 6px #F2C14E;
     }
 
     .prompt-banner {
-      background: rgba(242, 193, 78, 0.25);
+      background: rgba(242, 193, 78, 0.22);
       border: 1px solid #F2C14E;
       color: #FFF6C2;
-      padding: 8px 22px;
-      border-radius: 20px;
-      font-size: 18px;
+      padding: 4px 16px;
+      border-radius: 14px;
+      font-size: 13px;
       font-weight: 600;
-      text-shadow: 0 0 8px rgba(242, 193, 78, 0.6);
+      text-shadow: 0 0 6px rgba(242, 193, 78, 0.6);
       backdrop-filter: blur(6px);
       opacity: 0;
       transition: opacity 0.3s;
@@ -200,43 +219,38 @@
       color: #FFFFFF !important;
     }
 
-    .bottom-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-    }
-
     .controls-hint {
-      background: rgba(14, 20, 48, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(14, 20, 48, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 8px;
-      padding: 8px 16px;
-      font-size: 18px;
+      padding: 5px 10px;
+      font-size: 11px;
       color: #8FA3B8;
       display: flex;
-      gap: 14px;
+      gap: 10px;
       flex-wrap: wrap;
+      max-width: 320px;
     }
     .key-badge {
       background: rgba(242, 193, 78, 0.18);
       border: 1px solid rgba(242, 193, 78, 0.4);
-      border-radius: 4px;
-      padding: 3px 8px;
-      font-size: 18px;
+      border-radius: 3px;
+      padding: 1px 5px;
+      font-size: 10px;
       font-weight: bold;
       color: #F2C14E;
     }
 
     .skill-icons {
       display: flex;
-      gap: 12px;
+      gap: 8px;
     }
     .skill-box {
-      width: 58px;
-      height: 58px;
-      background: rgba(14, 20, 48, 0.88);
+      width: 46px;
+      height: 46px;
+      background: rgba(14, 20, 48, 0.8);
       border: 1px solid rgba(242, 193, 78, 0.4);
-      border-radius: 10px;
+      border-radius: 8px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -244,14 +258,15 @@
       position: relative;
       overflow: hidden;
     }
-    .skill-key { font-size: 18px; color: #F2C14E; font-weight: bold; }
-    .skill-name { font-size: 14px; color: #8FA3B8; margin-top: 2px; }
+    .skill-key { font-size: 12px; color: #F2C14E; font-weight: bold; }
+    .skill-name { font-size: 9px; color: #8FA3B8; margin-top: 1px; }
     .skill-cd-overlay {
       position: absolute;
       bottom: 0; left: 0; width: 100%; height: 0%;
       background: rgba(255, 90, 95, 0.5);
       transition: height 0.08s linear;
     }
+    .skill-box.charmed { border-color: #4ADE80; box-shadow: 0 0 10px rgba(74, 222, 128, 0.4); }
 
     /* Directional Threat Edge Indicator */
     #threat-radar {
@@ -261,7 +276,7 @@
       z-index: 15;
     }
 
-    /* Modals */
+    /* ===== Screens & Modals ===== */
     .modal-screen {
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -278,30 +293,138 @@
       overflow-y: auto;
     }
     .modal-screen.active { display: flex; }
-    .modal-title { font-size: 32px; margin-bottom: 8px; font-weight: 800; letter-spacing: 1.5px; color: #F2C14E; }
-    .modal-desc { font-size: 18px; color: #8FA3B8; margin-bottom: 20px; max-width: 620px; line-height: 1.5; }
+    .modal-title { font-size: 26px; margin-bottom: 8px; font-weight: 800; letter-spacing: 1.5px; color: #F2C14E; }
+    .modal-desc { font-size: 14px; color: #8FA3B8; margin-bottom: 18px; max-width: 620px; line-height: 1.6; }
 
     .btn-action {
       background: linear-gradient(135deg, #F2C14E, #C8102E);
       border: none;
-      border-radius: 25px;
-      padding: 12px 28px;
+      border-radius: 22px;
+      padding: 10px 24px;
       color: #FFF;
-      font-size: 18px;
+      font-size: 15px;
       font-weight: 700;
       cursor: pointer;
-      margin: 6px;
-      box-shadow: 0 6px 20px rgba(242, 193, 78, 0.4);
+      margin: 5px;
+      box-shadow: 0 5px 16px rgba(242, 193, 78, 0.35);
       transition: transform 0.2s, box-shadow 0.2s;
     }
     .btn-action:hover {
       transform: scale(1.05);
-      box-shadow: 0 8px 25px rgba(242, 193, 78, 0.6);
+      box-shadow: 0 7px 20px rgba(242, 193, 78, 0.55);
     }
     .btn-secondary {
       background: rgba(255, 255, 255, 0.1);
       border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: none;
     }
+
+    /* ===== Intro screen ===== */
+    #intro-screen {
+      background: radial-gradient(ellipse at 50% 30%, rgba(38, 28, 72, 0.92), rgba(8, 10, 28, 0.97) 70%);
+    }
+    .intro-lantern {
+      font-size: 64px;
+      line-height: 1;
+      margin-bottom: 18px;
+      filter: drop-shadow(0 0 24px rgba(242, 193, 78, 0.8));
+      animation: lanternFloat 3.4s ease-in-out infinite;
+    }
+    @keyframes lanternFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+    .intro-title {
+      font-size: 54px;
+      font-weight: 900;
+      letter-spacing: 6px;
+      background: linear-gradient(180deg, #FFF3C4, #F2C14E 55%, #C8102E);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 40px rgba(242, 193, 78, 0.25);
+      margin-bottom: 10px;
+      white-space: nowrap;
+    }
+    .intro-tagline { font-size: 16px; color: #AAB8D8; letter-spacing: 2px; margin-bottom: 26px; }
+    .intro-story {
+      max-width: 560px;
+      font-size: 14px;
+      line-height: 1.8;
+      color: #8FA3B8;
+      border-left: 2px solid rgba(242, 193, 78, 0.45);
+      padding: 4px 0 4px 18px;
+      text-align: left;
+      margin-bottom: 30px;
+    }
+    .intro-hint { margin-top: 18px; font-size: 12px; color: #5F7189; letter-spacing: 1px; }
+    #btn-intro-start { font-size: 17px; padding: 13px 38px; animation: pulseGlow 2s ease-in-out infinite; }
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 5px 16px rgba(242, 193, 78, 0.35); }
+      50% { box-shadow: 0 5px 34px rgba(242, 193, 78, 0.75); }
+    }
+    body.reduce-motion .intro-lantern, body.reduce-motion #btn-intro-start { animation: none; }
+
+    /* ===== Main menu ===== */
+    .menu-night-cards {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .night-card {
+      width: 190px;
+      padding: 16px 12px;
+      background: rgba(14, 20, 48, 0.85);
+      border: 1px solid rgba(242, 193, 78, 0.35);
+      border-radius: 14px;
+      color: #F5F1E6;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+      font-family: inherit;
+    }
+    .night-card:hover {
+      transform: translateY(-4px);
+      border-color: #F2C14E;
+      box-shadow: 0 10px 26px rgba(242, 193, 78, 0.3);
+    }
+    .night-card.active { border-color: #F2C14E; box-shadow: 0 0 16px rgba(242, 193, 78, 0.45); }
+    .nc-num { font-size: 11px; letter-spacing: 2px; color: #C8102E; font-weight: 800; }
+    .nc-name { font-size: 19px; font-weight: 800; color: #F2C14E; }
+    .nc-desc { font-size: 11px; color: #8FA3B8; line-height: 1.5; }
+    .menu-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 16px; }
+    .menu-controls-summary {
+      font-size: 12px;
+      color: #5F7189;
+      margin-top: 4px;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    /* tables (leaderboard / settings) */
+    .table-container {
+      width: 100%;
+      max-width: 620px;
+      background: rgba(14, 20, 48, 0.7);
+      border: 1px solid rgba(242, 193, 78, 0.3);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+    th { background: rgba(242, 193, 78, 0.15); color: #F2C14E; padding: 8px 12px; font-weight: bold; font-size: 13px; }
+    td { padding: 7px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); color: #E2E8F0; font-size: 14px; }
+    tr:nth-child(even) { background: rgba(255, 255, 255, 0.02); }
+    .rank-1 { color: #F2C14E; font-weight: bold; }
+    .rank-2 { color: #E2E8F0; font-weight: bold; }
+    .rank-3 { color: #CD7F32; font-weight: bold; }
 
     .night-selector {
       display: flex;
@@ -318,12 +441,13 @@
       background: transparent;
       border: 1px solid transparent;
       border-radius: 14px;
-      padding: 6px 14px;
-      font-size: 18px;
+      padding: 5px 12px;
+      font-size: 13px;
       font-weight: 700;
       color: #8FA3B8;
       cursor: pointer;
       transition: all 0.2s;
+      font-family: inherit;
     }
     .btn-night-tab:hover {
       color: #FFF;
@@ -335,35 +459,18 @@
       box-shadow: 0 0 10px rgba(242, 193, 78, 0.7);
     }
 
-    /* Leaderboard & Settings Tables */
-    .table-container {
-      width: 100%;
-      max-width: 680px;
-      background: rgba(14, 20, 48, 0.7);
-      border: 1px solid rgba(242, 193, 78, 0.3);
-      border-radius: 12px;
-      overflow: hidden;
-      margin-bottom: 16px;
-    }
-    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 18px; }
-    th { background: rgba(242, 193, 78, 0.15); color: #F2C14E; padding: 10px 14px; font-weight: bold; font-size: 18px; }
-    td { padding: 9px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); color: #E2E8F0; font-size: 18px; }
-    tr:nth-child(even) { background: rgba(255, 255, 255, 0.02); }
-    .rank-1 { color: #F2C14E; font-weight: bold; }
-    .rank-2 { color: #E2E8F0; font-weight: bold; }
-    .rank-3 { color: #CD7F32; font-weight: bold; }
-
     .input-field {
       background: rgba(14, 20, 48, 0.85);
       border: 1px solid #F2C14E;
       border-radius: 8px;
       color: #FFF;
-      padding: 8px 14px;
-      font-size: 18px;
+      padding: 7px 12px;
+      font-size: 14px;
       outline: none;
-      width: 240px;
+      width: 220px;
       text-align: center;
       margin-right: 8px;
+      font-family: inherit;
     }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -375,68 +482,56 @@
 
   <div id="hud">
     <div class="top-bar">
-      <div class="stat-card title-banner">
-        <div>
-          <h1 id="island-title">ĐẢO ĐÈN LỒNG — ĐÊM 1</h1>
-          <p id="island-subtitle">Đảo Bến · Người giữ đèn Mây</p>
-        </div>
+      <div class="title-banner">
+        <h1 id="island-title">ĐẢO ĐÈN LỒNG — ĐÊM 1</h1>
+        <p id="island-subtitle">Đảo Bến · Người giữ đèn Mây</p>
       </div>
 
-      <div class="top-center">
-        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: center;">
-          <div class="night-selector">
-            <button class="btn-night-tab active" data-night="1">🌙 Đêm 1</button>
-            <button class="btn-night-tab" data-night="2">🌙 Đêm 2</button>
-            <button class="btn-night-tab" data-night="3">🌙 Đêm 3</button>
-          </div>
-          <button class="btn-night-tab" id="btn-leaderboard" style="background: rgba(14, 20, 48, 0.9); border: 1px solid rgba(242, 193, 78, 0.4); border-radius: 20px; pointer-events: auto;">🏆 Bảng Xếp Hạng</button>
-          <button class="btn-night-tab" id="btn-settings" style="background: rgba(14, 20, 48, 0.9); border: 1px solid rgba(242, 193, 78, 0.4); border-radius: 20px; pointer-events: auto;">⚙ Cài Đặt</button>
-        </div>
-        <div class="timer-badge" id="timer-badge" style="margin-top: 6px;">04:00</div>
-      </div>
+      <div class="timer-badge" id="timer-badge">04:00</div>
 
-      <div class="stat-card hud-metrics">
-        <div class="metric">
-          <span class="metric-label">Sinh Mệnh</span>
+      <div class="hud-metrics">
+        <div class="hud-cell">
+          <span class="hud-label">Sinh Lực</span>
           <div class="flames-container" id="flames-container">
             <span class="flame-icon">🔥</span>
             <span class="flame-icon">🔥</span>
             <span class="flame-icon">🔥</span>
           </div>
         </div>
-        <div class="metric">
-          <span class="metric-label">Đèn Sáng</span>
+        <div class="hud-cell">
+          <span class="hud-label">Đèn Sáng</span>
           <span class="metric-value accent" id="lanterns-lit">0 / 5</span>
         </div>
-        <div class="metric">
-          <span class="metric-label">Sức Chứa</span>
+        <div class="hud-cell">
+          <span class="hud-label">Đang Mang</span>
           <span class="metric-value accent" id="capacity-val">0 / 10</span>
         </div>
-        <div class="metric">
-          <span class="metric-label">Điểm</span>
+        <div class="hud-cell">
+          <span class="hud-label">Điểm</span>
           <span class="metric-value accent" id="score-val">0</span>
         </div>
       </div>
     </div>
 
-    <div class="bottom-center">
-      <div class="prompt-banner" id="prompt-banner">E — Nạp ánh sáng (0/10)</div>
-      <div class="mote-bar-container" id="mote-bar"></div>
-    </div>
-
     <div class="bottom-bar">
       <div class="controls-hint" id="controls-hint-bar">
         <div><span class="key-badge" id="badge-move">WASD</span> Di chuyển</div>
-        <div><span class="key-badge" id="badge-dash">Shift</span> Lướt</div>
         <div><span class="key-badge" id="badge-jump">Space</span> Nhảy</div>
-        <div><span class="key-badge" id="badge-interact">E</span> Thắp / Châm dầu</div>
+        <div><span class="key-badge" id="badge-dash">Shift</span> Lướt</div>
+        <div><span class="key-badge" id="badge-interact">E</span> Đèn</div>
         <div><span class="key-badge" id="badge-pulse">Q</span> Tỏa sáng</div>
-        <div><span class="key-badge">Chuột</span> Xoay camera</div>
+        <div><span class="key-badge">Chuột</span> Xoay cam</div>
         <div><span class="key-badge" id="badge-pause">P / Esc</span> Dừng</div>
       </div>
 
+      <div class="bottom-center">
+        <div id="charm-pill" class="charm-pill" style="display:none;">⚡ Bùa Tăng Tốc <span id="charm-time">0s</span></div>
+        <div class="prompt-banner" id="prompt-banner">E — Nạp ánh sáng (0/10)</div>
+        <div class="mote-bar-container" id="mote-bar"></div>
+      </div>
+
       <div class="skill-icons">
-        <div class="skill-box">
+        <div class="skill-box" id="skill-dash-box">
           <div class="skill-cd-overlay" id="dash-cd-overlay"></div>
           <span class="skill-key" id="box-dash-key">Shift</span>
           <span class="skill-name">Lướt</span>
@@ -450,6 +545,59 @@
     </div>
   </div>
 
+  <!-- Intro Screen (trang mở đầu) -->
+  <div class="modal-screen active" id="intro-screen">
+    <div class="intro-lantern">🏮</div>
+    <h1 class="intro-title">ĐẢO ĐÈN LỒNG</h1>
+    <p class="intro-tagline">NHỮNG NGỌN ĐÈN KHÔNG ĐƯỢC TẮT</p>
+    <div class="intro-story">
+      Nơi đây biển mây nuốt chửng mọi ánh sáng. Chỉ còn những Đèn Lồng cổ — linh hồn của đảo —
+      thắp lên nhờ đom đóm ma thuật. Bạn là <strong style="color:#F2C14E;">Mây</strong>, người giữ đèn cuối cùng:
+      hái đom đóm, thắp đèn, nuôi dầu và đừng để <strong style="color:#A855F7;">Bóng Mực</strong> dập tắt
+      ánh sáng trước khi bình minh ló rạng.
+    </div>
+    <button class="btn-action" id="btn-intro-start">▶ &nbsp;Bắt Đầu Khám Phá</button>
+    <div class="intro-hint">Nhấp chuột vào màn hình chơi để khoá con trỏ · Xoay camera bằng chuột</div>
+  </div>
+
+  <!-- Main Menu Screen -->
+  <div class="modal-screen" id="menu-screen">
+    <h2 class="modal-title">🏮 CHỌN ĐÊM CHƠI</h2>
+    <p class="modal-desc">Mỗi đêm là một hòn đảo — thử thách khó dần lên. Giữ đủ số đèn sáng tới bình minh để chiến thắng:</p>
+
+    <div class="menu-night-cards">
+      <button class="night-card btn-night-pick" data-night="1">
+        <span class="nc-num">ĐÊM 1</span>
+        <span class="nc-name">Đảo Bến</span>
+        <span class="nc-desc">Đảo tròn 40m · 5 đèn<br>04:00 · cần 3 đèn sáng<br> — Làm quen nhiệm vụ —</span>
+      </button>
+      <button class="night-card btn-night-pick" data-night="2">
+        <span class="nc-num">ĐÊM 2</span>
+        <span class="nc-name">Đảo Cau</span>
+        <span class="nc-desc">2 đảo + cầu tre · 6 đèn<br>04:30 · cần 4 đèn sáng<br> Bục nhảy · Gió Lạc · Bùa Gió</span>
+      </button>
+      <button class="night-card btn-night-pick" data-night="3">
+        <span class="nc-num">ĐÊM 3</span>
+        <span class="nc-name">Đảo Chuông</span>
+        <span class="nc-desc">3 tầng địa hình · 7 đèn<br>05:00 · cần 5 đèn sáng<br> Tháp chuông · Dốc · Gió giật</span>
+      </button>
+    </div>
+
+    <div class="menu-row">
+      <button class="btn-action" id="btn-leaderboard">🏆 Bảng Xếp Hạng</button>
+      <button class="btn-action btn-secondary" id="btn-settings">⚙ Cài Đặt & Tiếp Cận</button>
+    </div>
+
+    <div class="menu-controls-summary">
+      <span><b>WASD</b> di chuyển</span>
+      <span><b>Space</b> nhảy</span>
+      <span><b>Shift</b> lướt</span>
+      <span><b>E</b> thắp đèn / châm dầu</span>
+      <span><b>Q</b> tỏa sáng</span>
+      <span><b>P/Esc</b> tạm dừng</span>
+    </div>
+  </div>
+
   <!-- Pause Modal -->
   <div class="modal-screen" id="pause-screen">
     <h2 class="modal-title">TẠM DỪNG</h2>
@@ -459,6 +607,7 @@
       <button class="btn-action btn-secondary" id="btn-restart-night">🔄 Chơi lại Đêm này</button>
       <button class="btn-action btn-secondary" id="btn-pause-leaderboard">🏆 Bảng Xếp Hạng</button>
       <button class="btn-action btn-secondary" id="btn-pause-settings">⚙ Cài Đặt</button>
+      <button class="btn-action btn-secondary" id="btn-pause-menu">🏠 Về Menu Chính</button>
     </div>
     <div style="font-size: 12px; text-transform: uppercase; color: #F2C14E; margin-bottom: 10px; letter-spacing: 1.5px; font-weight: bold;">CHỌN MÀN CHƠI TRỰC TIẾP</div>
     <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
@@ -535,6 +684,7 @@
     <div style="margin-bottom: 18px;">
       <button class="btn-action" id="btn-retry">🔄 Chơi lại Đêm này</button>
       <button class="btn-action" id="btn-next-night">Đêm Tiếp Theo ▶</button>
+      <button class="btn-action btn-secondary" id="btn-result-menu">🏠 Về Menu Chính</button>
     </div>
     <div style="font-size: 12px; text-transform: uppercase; color: #8FA3B8; margin-bottom: 8px; letter-spacing: 1px;">CHỌN MÀN CHƠI</div>
     <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
@@ -713,6 +863,7 @@
     function applySettings() {
       document.body.classList.toggle('colorblind-active', colorblindMode);
       document.body.classList.toggle('large-ui', largeUi);
+      document.body.classList.toggle('reduce-motion', reduceMotion);
 
       const cbBtn = document.getElementById('toggle-colorblind');
       if (cbBtn) cbBtn.innerText = colorblindMode ? '👁 Bảng màu: Dễ phân biệt ⚠' : '👁 Bảng màu: Chuẩn';
@@ -893,6 +1044,99 @@
     let envGroup = new THREE.Group();
     scene.add(envGroup);
 
+    // ---- Trang trí bầu trời (dùng chung mọi Đêm, view-only) ----
+    // Bầu sao + trăng lưỡi liềm
+    (function buildSky() {
+      const starGeo = new THREE.BufferGeometry();
+      const starCount = 420;
+      const positions = new Float32Array(starCount * 3);
+      for (let i = 0; i < starCount; i++) {
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.random() * Math.PI * 0.42;
+        const r = 380;
+        positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+        positions[i * 3 + 1] = r * Math.cos(phi) * 0.7 + 45;
+        positions[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+      }
+      starGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({
+        color: 0xCFE2FF, size: 1.6, sizeAttenuation: false, transparent: true, opacity: 0.8, fog: false
+      })));
+
+      const moon = new THREE.Mesh(
+        new THREE.SphereGeometry(9, 20, 20),
+        new THREE.MeshBasicMaterial({ color: 0xF7F1DC, fog: false })
+      );
+      moon.position.set(-130, 100, -230);
+      scene.add(moon);
+      const moonGlow = new THREE.Mesh(
+        new THREE.SphereGeometry(14, 20, 20),
+        new THREE.MeshBasicMaterial({ color: 0xB9C8F2, transparent: true, opacity: 0.16, fog: false })
+      );
+      moonGlow.position.copy(moon.position);
+      scene.add(moonGlow);
+    })();
+
+    // Đèn trời bay lơ lửng (ambience)
+    const skyLanterns = [];
+    if (!isBenchMode) {
+      const slGeo = new THREE.BoxGeometry(0.55, 0.75, 0.55);
+      const slMat = new THREE.MeshBasicMaterial({ color: 0xFFB84D, transparent: true, opacity: 0.92, fog: false });
+      for (let i = 0; i < 10; i++) {
+        const m = new THREE.Mesh(slGeo, slMat);
+        const a = Math.random() * Math.PI * 2;
+        const r = 25 + Math.random() * 90;
+        m.position.set(r * Math.cos(a), 8 + Math.random() * 40, r * Math.sin(a));
+        scene.add(m);
+        skyLanterns.push({ mesh: m, speed: 0.4 + Math.random() * 0.7, phase: Math.random() * 6.28 });
+      }
+    }
+
+    let seaMesh = null;
+    let mistMesh = null;
+
+    // Helper: chấm điểm ngẫu nhiên trên mặt đất, tránh đèn/bục nhảy/bùa
+    function scatterProps(nightNum, count, minR, maxR, cb) {
+      const map = MAPS_DATA[nightNum];
+      let placed = 0, guard = 0;
+      while (placed < count && guard++ < 250) {
+        const a = Math.random() * Math.PI * 2;
+        const r = minR + Math.random() * (maxR - minR);
+        const x = r * Math.cos(a);
+        const z = r * Math.sin(a);
+        const y = map.getGround(x, z);
+        if (y === null) continue;
+        const nearSomething = [...map.lanterns, ...map.jumpPads, ...(map.charms || [])]
+          .some(o => Math.hypot(x - o.pos[0], z - o.pos[2]) < 4.5);
+        if (nearSomething) continue;
+        cb(x, y, z);
+        placed++;
+      }
+    }
+
+    // Helper: cây thông low-poly
+    function addTree(parent, x, y, z, s, leafColors) {
+      const g = new THREE.Group();
+      const trunk = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.12 * s, 0.2 * s, 1.2 * s, 6),
+        new THREE.MeshStandardMaterial({ color: 0x5A4030, roughness: 0.9 })
+      );
+      trunk.position.y = 0.6 * s;
+      g.add(trunk);
+      let cy = 1.1 * s;
+      for (let i = 0; i < 3; i++) {
+        const cone = new THREE.Mesh(
+          new THREE.ConeGeometry((0.85 - i * 0.22) * s, (1.0 - i * 0.15) * s, 7),
+          new THREE.MeshStandardMaterial({ color: leafColors[i % leafColors.length], roughness: 0.85, flatShading: true })
+        );
+        cone.position.y = cy + 0.4 * s;
+        cy += 0.55 * s;
+        g.add(cone);
+      }
+      g.position.set(x, y, z);
+      parent.add(g);
+    }
+
     let lanternMeshes = [];
     let moteMeshes = [];
     let shadeMeshes = [];
@@ -1007,13 +1251,14 @@
         t0.position.set(0, -2, 0);
         envGroup.add(t0);
 
-        // Tier 1 Half-Ring (32 segments)
+        // Tier 1 Half-Ring — khớp getGround: bán khuyên r∈[12,24] phía z>0, mặt đi lại ở Y=3
+        // (rotation.x = +PI/2 để mặt phẳng shape nằm ngang ở y=3, phần đùn dày 3 đi XUỐNG tới y=0)
         const shape = new THREE.Shape();
         shape.absarc(0, 0, 24, 0, Math.PI, false);
         shape.absarc(0, 0, 12, Math.PI, 0, true);
         const extrudeGeom = new THREE.ExtrudeGeometry(shape, { depth: 3, bevelEnabled: false, curveSegments: 16 });
         const t1 = new THREE.Mesh(extrudeGeom, new THREE.MeshStandardMaterial({ color: 0x2F5D50 }));
-        t1.rotation.x = -Math.PI / 2;
+        t1.rotation.x = Math.PI / 2;
         t1.position.set(0, 3, 0);
         envGroup.add(t1);
 
@@ -1027,19 +1272,20 @@
         tower.position.set(0, 10, 0);
         envGroup.add(tower);
 
-        // Ramps
+        // Ramps — khớp getGround: dốc chạy XUYẾN BÁN KÍNH ở góc 30° và 150°
+        // (chân dốc r=30, Y=0 → đỉnh r=24, Y=3). Dùng Euler 'YXZ': nghiêng trước, quayYaw sau.
         const rampGeo = new THREE.BoxGeometry(3.0, 0.35, 6.7);
         const rampMat = new THREE.MeshStandardMaterial({ color: 0x8C6747, roughness: 0.8 });
         const ramp1 = new THREE.Mesh(rampGeo, rampMat);
-        ramp1.position.set(23.38, 1.5, 13.5);
-        ramp1.rotation.y = -Math.PI / 6;
-        ramp1.rotation.x = 0.46;
+        ramp1.rotation.order = 'YXZ';
+        ramp1.rotation.set(0.4636, Math.PI / 3, 0); // pitch dốc 26.6°, hướng 30°
+        ramp1.position.set(23.38, 1.33, 13.5);
         envGroup.add(ramp1);
 
         const ramp2 = new THREE.Mesh(rampGeo, rampMat);
-        ramp2.position.set(-23.38, 1.5, 13.5);
-        ramp2.rotation.y = Math.PI / 6;
-        ramp2.rotation.x = 0.46;
+        ramp2.rotation.order = 'YXZ';
+        ramp2.rotation.set(0.4636, -Math.PI / 3, 0); // hướng 150°
+        ramp2.position.set(-23.38, 1.33, 13.5);
         envGroup.add(ramp2);
       }
 
@@ -1118,6 +1364,50 @@
         envGroup.add(cGroup);
         charmMeshes.push({ data: c, mesh: cGroup });
       });
+
+      // ---- Scenery view-only: biển mây, cây, đá, vòng sáng chân đèn (bỏ qua ở bench mode) ----
+      if (!isBenchMode) {
+        seaMesh = new THREE.Mesh(
+          new THREE.PlaneGeometry(700, 700),
+          new THREE.MeshBasicMaterial({ color: 0x0F1B44, transparent: true, opacity: 0.92 })
+        );
+        seaMesh.rotation.x = -Math.PI / 2;
+        seaMesh.position.y = -6.5;
+        envGroup.add(seaMesh);
+
+        mistMesh = new THREE.Mesh(
+          new THREE.PlaneGeometry(700, 700),
+          new THREE.MeshBasicMaterial({ color: 0x24356E, transparent: true, opacity: 0.22 })
+        );
+        mistMesh.rotation.x = -Math.PI / 2;
+        mistMesh.position.y = -5.2;
+        envGroup.add(mistMesh);
+
+        const leafPalettes = [[0x2E7D5B, 0x3A9169, 0x276B4C], [0x4C8C3F, 0x5FA34D, 0x3E7A35]];
+        scatterProps(nightNum, nightNum === 2 ? 14 : 12, 9, nightNum === 3 ? 43 : 36, (x, y, z) => {
+          addTree(envGroup, x, y, z, 0.9 + Math.random() * 0.8, leafPalettes[Math.floor(Math.random() * 2)]);
+        });
+        scatterProps(nightNum, 9, 9, nightNum === 3 ? 42 : 36, (x, y, z) => {
+          const rock = new THREE.Mesh(
+            new THREE.DodecahedronGeometry(0.35 + Math.random() * 0.5, 0),
+            new THREE.MeshStandardMaterial({ color: 0x6E7686, roughness: 0.95, flatShading: true })
+          );
+          rock.position.set(x, y + 0.15, z);
+          rock.rotation.set(Math.random() * 3, Math.random() * 3, Math.random() * 3);
+          envGroup.add(rock);
+        });
+
+        // Vòng sáng vàng quanh chân Đèn Lớn
+        gameState.lanterns.forEach(l => {
+          const ring = new THREE.Mesh(
+            new THREE.TorusGeometry(1.35, 0.06, 8, 28),
+            new THREE.MeshBasicMaterial({ color: 0xF2C14E, transparent: true, opacity: 0.4 })
+          );
+          ring.rotation.x = Math.PI / 2;
+          ring.position.set(l.pos[0], l.pos[1] + 0.06, l.pos[2]);
+          envGroup.add(ring);
+        });
+      }
 
       // Deterministic PRNG helper for Benchmark Mode (seed 42)
       function createPrng(s) {
@@ -1232,7 +1522,7 @@
     }
 
     function updateNightPills(nightNum) {
-      document.querySelectorAll('.btn-night-tab[data-night]').forEach(b => {
+      document.querySelectorAll('.btn-night-tab[data-night], .night-card').forEach(b => {
         if (parseInt(b.getAttribute('data-night')) === nightNum) b.classList.add('active');
         else b.classList.remove('active');
       });
@@ -1271,6 +1561,9 @@
         return;
       }
 
+      // Đang ở intro/menu/kết thúc: không nhận phím gameplay
+      if (storyScreensOpen()) return;
+
       if (k === keybinds.interact) triggerInteract();
       if (k === keybinds.pulse) triggerPulse();
       if (k === keybinds.dash || (keybinds.dash === 'shift' && e.shiftKey)) triggerDash();
@@ -1289,12 +1582,37 @@
 
     function switchNightDirect(nightNum) {
       isPaused = false;
+      document.body.classList.remove('menu-open');
+      document.getElementById('intro-screen').classList.remove('active');
+      document.getElementById('menu-screen').classList.remove('active');
       document.getElementById('pause-screen').classList.remove('active');
       document.getElementById('result-screen').classList.remove('active');
       document.getElementById('leaderboard-screen').classList.remove('active');
       document.getElementById('settings-screen').classList.remove('active');
       initNight(nightNum);
     }
+
+    function openMainMenu() {
+      isPaused = true;
+      if (document.pointerLockElement) document.exitPointerLock();
+      document.getElementById('pause-screen').classList.remove('active');
+      document.getElementById('result-screen').classList.remove('active');
+      document.getElementById('menu-screen').classList.add('active');
+      document.body.classList.add('menu-open');
+    }
+
+    // Đang mở screen chặn gameplay (intro/menu/kết thúc/bảng xếp hạng/cài đặt)?
+    function storyScreensOpen() {
+      return ['intro-screen', 'menu-screen', 'result-screen', 'leaderboard-screen', 'settings-screen']
+        .some(id => document.getElementById(id).classList.contains('active'));
+    }
+
+    document.getElementById('btn-intro-start').addEventListener('click', () => {
+      document.getElementById('intro-screen').classList.remove('active');
+      document.getElementById('menu-screen').classList.add('active');
+    });
+    document.getElementById('btn-pause-menu').addEventListener('click', openMainMenu);
+    document.getElementById('btn-result-menu').addEventListener('click', openMainMenu);
 
     document.querySelectorAll('.btn-night-tab[data-night], .btn-night-pick').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1304,7 +1622,7 @@
     });
 
     function togglePause() {
-      if (isBenchMode) return;
+      if (isBenchMode || storyScreensOpen()) return;
       isPaused = !isPaused;
       if (isPaused && document.pointerLockElement) document.exitPointerLock();
       document.getElementById('pause-screen').classList.toggle('active', isPaused);
@@ -1742,8 +2060,11 @@
             const nx = mx / len;
             const nz = mz / len;
 
-            const worldX = nx * Math.cos(camYaw) + nz * Math.sin(camYaw);
-            const worldZ = -nx * Math.sin(camYaw) + nz * Math.cos(camYaw);
+            // Camera-relative movement (fix A/D đảo chiều):
+            // camera đặt sau lưng nhân vật theo (-sin yaw, -cos yaw), nhìn dọc hướng (sin yaw, cos yaw);
+            // khi nhìn dọc +Z (yaw=0), màn hình bên PHẢI tương ứng world -X → hệ số nx phải âm.
+            const worldX = nz * Math.sin(camYaw) - nx * Math.cos(camYaw);
+            const worldZ = nz * Math.cos(camYaw) + nx * Math.sin(camYaw);
             gameState.player.dashDir = [worldX, worldZ];
 
             const curDist = gameState.player.dashTimer > 0 ? 14.0 * dt : moveSpeed * dt;
@@ -1984,6 +2305,27 @@
           d.mesh.position.set(d.pos[0], 1.2, d.pos[2]);
         });
 
+        // Charm (Bùa Tăng Tốc) visuals: ẩn khi đã nhặt / đang hồi, xoay + dập dềnh khi còn
+        charmMeshes.forEach(cm => {
+          cm.mesh.visible = cm.data.available;
+          if (cm.data.available) {
+            cm.mesh.rotation.y += dt * 1.8;
+            cm.mesh.position.y = cm.data.pos[1] + 0.65 + Math.sin(time * 0.004) * 0.14;
+          }
+        });
+
+        // Ambient animation: đèn trời bay + biển mây gợn sóng (view-only)
+        if (!isBenchMode) {
+          skyLanterns.forEach(sl => {
+            sl.mesh.position.y += sl.speed * dt;
+            if (sl.mesh.position.y > 55) sl.mesh.position.y = 8;
+            sl.mesh.position.x += Math.sin(time * 0.0004 + sl.phase) * dt * 0.6;
+            sl.mesh.rotation.y += dt * 0.5;
+          });
+          if (seaMesh) seaMesh.position.y = -6.5 + Math.sin(time * 0.0006) * 0.25;
+          if (mistMesh) mistMesh.position.y = -5.2 + Math.sin(time * 0.0011 + 2.0) * 0.35;
+        }
+
         // Camera Positioning
         if (isBenchMode) {
           // Circular orbit around (0,0,0), radius 30m, height 15m, 15s/rev CCW
@@ -2045,6 +2387,16 @@
 
           document.getElementById('dash-cd-overlay').style.height = `${(Math.max(0, gameState.player.dashCd) / 1.5) * 100}%`;
           document.getElementById('pulse-cd-overlay').style.height = `${(Math.max(0, gameState.player.pulseCd) / 3.0) * 100}%`;
+
+          // Charm (Bùa Tăng Tốc) indicator
+          const charmPill = document.getElementById('charm-pill');
+          if (gameState.player.charmTimer > 0) {
+            charmPill.style.display = 'flex';
+            document.getElementById('charm-time').innerText = `${gameState.player.charmTimer.toFixed(1)}s`;
+          } else {
+            charmPill.style.display = 'none';
+          }
+          document.getElementById('skill-dash-box').classList.toggle('charmed', gameState.player.charmTimer > 0);
 
           // Prompt Banner & Subtitles
           let promptText = '';
@@ -2121,15 +2473,15 @@
             const dz = s.pos[2] - gameState.player.pos[2];
             const dist = Math.hypot(dx, dz);
             if (dist > 3.0 && dist <= 18.0) {
-              // Direction relative to camera yaw
+              // Direction relative to camera yaw (lật dấu sin: màn hình phải = world -X khi yaw=0)
               const relAngle = Math.atan2(dx, dz) - camYaw;
               const arrowDist = Math.min(cx - 30, cy - 30);
-              const ax = cx + Math.sin(relAngle) * arrowDist;
+              const ax = cx - Math.sin(relAngle) * arrowDist;
               const ay = cy - Math.cos(relAngle) * arrowDist;
 
               radarCtx.save();
               radarCtx.translate(ax, ay);
-              radarCtx.rotate(relAngle);
+              radarCtx.rotate(-relAngle);
               radarCtx.fillStyle = colorblindMode ? '#00B3FF' : '#FF5A5F';
               radarCtx.beginPath();
               radarCtx.moveTo(0, -12);
@@ -2193,6 +2545,10 @@
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
+
+    // Boot: thế giới dựng sẵn phía sau màn intro, tạm dừng chờ người chơi
+    document.body.classList.add('menu-open');
+    isPaused = true;
 
     requestAnimationFrame(animate);
   </script>
