@@ -5,6 +5,20 @@ Tác giả: Chử Văn Hiệp (MSSV: 2A202603382) · Lớp: L3A
 
 ---
 
+## [hotfix-visuals-v5] — Playtest vòng 3: tách đàn quái, spawn tiến trình, lướt xa hơn, fix chuột lật 180°
+
+### 🐛 Sửa lỗi
+1. **Quái dồn chồng thành 1 "cục" (nhìn như 5 con gộp làm 1)**: toàn bộ Bóng Mực wander cùng lao về MỘT đèn mục tiêu đầu tiên trong danh sách, cùng tốc độ và không có lực đẩy lẫn nhau → chồng lên đúng một điểm. Đã sửa cả 2 nguyên nhân:
+   - Mỗi quái tự chọn & giữ riêng một đèn chưa thắp (`wanderTargetId`, đổi mục tiêu thưa), đèn cạn dầu giữ cơ chế lao về đèn yếu gần nhất.
+   - Thêm lực tách đàn (separation) đẩy quái ra xa nhau khi < 2.2m; tốc độ mỗi con lệch nhẹ ngẫu nhiên (`speedJit` 0.85–1.15) để đội hình giãn tự nhiên.
+2. **Camera lật 180° thoáng chốc khi quay chuột**: Chrome thỉnh thoảng phát `movementX` khổng lồ khi enter/exit Pointer Lock, làm yaw quay cả nửa vòng trong 1 frame. Đã kẹp delta mỗi event (khóa chuột ±60px, không khóa ±80px) và reset mốc `lastMouseX` khi đổi trạng thái khóa.
+
+### ✨ Cải tiến chơi
+3. **Quái spawn dần dần, dày dần qua đêm**: sức chứa quái mở theo tiến trình (+1 quái mỗi 40s: 2 → tối đa 8/10/12 với Đêm 1/2/3), chu kỳ spawn ngắn hơn (5.5/5.0/4.5s), mỗi lần chỉ thêm 1 con và luôn cách người chơi ≥ 15m.
+4. **Lướt xa hơn (view-only)**: thời lượng dash 0.2s → 0.32s, quãng đường ~2.8m → ~4.5m (tốc độ giữ nguyên 14 m/s; Core không đổi).
+
+---
+
 ## [hotfix-visuals-v4] — Playtest vòng 2: FX gió/lướt, nhân vật, chướng ngại vật, spawn cân bằng
 
 ### 🐛 Sửa lỗi (toàn bộ ở view `src/web/index.html`, không đổi Core)

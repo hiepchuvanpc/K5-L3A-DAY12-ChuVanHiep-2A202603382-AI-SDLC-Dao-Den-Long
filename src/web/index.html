@@ -1004,13 +1004,17 @@
 
     document.addEventListener('pointerlockchange', () => {
       isPointerLocked = (document.pointerLockElement === container);
+      lastMouseX = null; // tránh delta khổng lồ cấp 1 event sau chuyển trạng thái khóa
     });
 
     window.addEventListener('mousemove', (e) => {
+      // Fix lật 180°: Chrome thỉnh thoảng phun movementX rất lớn khi enter/exit
+      // pointer lock, làm camera quay hẳn nửa vòng trong 1 frame → kẹp deltas
+      const clamp = (v, lim) => Math.max(-lim, Math.min(lim, v));
       if (isPointerLocked) {
-        camYaw -= e.movementX * 0.002;
+        camYaw -= clamp(e.movementX, 60) * 0.002;
       } else if (lastMouseX !== null && !isBenchMode) {
-        const deltaX = e.clientX - lastMouseX;
+        const deltaX = clamp(e.clientX - lastMouseX, 80);
         camYaw -= deltaX * 0.0025;
       }
       lastMouseX = e.clientX;
@@ -1377,7 +1381,9 @@
         drainTimer: 0,
         stunnedTimer: 0,
         recoilTimer: 0,
-        wanderAngle: Math.random() * Math.PI * 2
+        wanderAngle: Math.random() * Math.PI * 2,
+        wanderTargetId: null,          // đèn mục tiêu riêng của từng quái (tránh dồn cục)
+        speedJit: 0.85 + Math.random() * 0.3 // tốc độ lệch nhẹ từng con
       };
     }
 
@@ -1956,7 +1962,7 @@
 
     function triggerDash() {
       if (gameState.state !== 'playing' || gameState.player.dashCd > 0 || gameState.player.dashTimer > 0) return;
-      gameState.player.dashTimer = 0.2;
+      gameState.player.dashTimer = 0.32; // view-only tục dài hơn so core 0.2s → lướt ~4.5m thay vì ~2.8m
       gameState.player.dashCd = gameState.player.charmTimer > 0 ? 0 : 1.5;
       AudioSys.playDash();
     }
@@ -2546,12 +2552,17 @@
             }
           }
 
-          // Spawn quái định kỳ — LUÔN cách người chơi >= 15m (từ vòng spawn ngoài rìa đảo)
+          // Spawn quái DẦN DẦN qua đêm — số lượng tối đa tăng theo tiến trình đêm,
+          // mỗi lần chỉ thêm 1 con và LUÔN cách người chơi >= 15m
           shadeSpawnTimer -= dt;
           if (shadeSpawnTimer <= 0) {
-            shadeSpawnTimer = currentNight === 3 ? 6.0 : 7.0;
-            const maxShades = currentNight === 1 ? 6 : (currentNight === 2 ? 8 : 10);
-            if (gameState.shades.length < maxShades) {
+            shadeSpawnTimer = currentNight === 3 ? 4.5 : (currentNight === 2 ? 5.0 : 5.5);
+            const elapsed = MAPS_DATA[currentNight].duration_s - gameState.timeLeft;
+            const capByTime = Math.min(
+              currentNight === 1 ? 8 : (currentNight === 2 ? 10 : 12),
+              2 + Math.floor(elapsed / 40) // mở cap +1 quái mỗi 40 giây (2 → tối đa 8/10/12)
+            );
+            if (gameState.shades.length < capByTime) {
               const pts = pickFarSpawns(getShadeSpawnPointsFor(currentNight), gameState.player.pos[0], gameState.player.pos[2], 15.0, 1);
               if (pts.length > 0) {
                 gameState.shades.push(createShade(pts[0], null));
@@ -2600,7 +2611,7 @@
             else if (distToPlayer > 18.0 && s.state === 'chase') s.state = 'wander';
 
             let moveX = 0, moveZ = 0;
-            const speed = currentNight === 3 ? 4.5 : 4.0;
+            const speed = (currentNight === 3 ? 4.5 : 4.0) * (s.speedJit || 1); // tốc độ lệch nhẹ mỗi con → đội hình giãn ra
 
             if (s.state === 'chase') {
               const dx = gameState.player.pos[0] - s.pos[0];
@@ -2610,9 +2621,27 @@
               moveZ = (dz / d) * speed * dt;
               s.mesh.rotation.y = Math.atan2(dx, dz);
             } else {
-              // Wander
-              let weakL = gameState.lanterns.filter(l => l.lit && l.fuel < 30);
-              let targetL = weakL.length > 0 ? weakL[0] : gameState.lanterns.find(l => !l.lit);
+              // Wander — mỗi quái có MỤC TIÊU RIÊNG (fix: cả bầy dồn về 1 đèn rồi chồng thành 1 cục)
+              const weakL = gameState.lanterns.filter(l => l.lit && l.fuel < 30);
+              let targetL = null;
+              if (weakL.length > 0) {
+                // Đèn cạn dầu: giữ cơ chế drain — quái lao về đèn yếu GẦN NHẤT
+                let best = weakL[0], bestD = Infinity;
+                weakL.forEach(l => {
+                  const dd = Math.hypot(l.pos[0] - s.pos[0], l.pos[2] - s.pos[2]);
+                  if (dd < bestD) { bestD = dd; best = l; }
+                });
+                targetL = best;
+              } else {
+                // Đèn chưa thắp: chia sân — mỗi quái tự chọn & giữ 1 mục tiêu riêng, đổi thưa
+                if (!s.wanderTargetId || Math.random() < 0.004) {
+                  const unlit = gameState.lanterns.filter(l => !l.lit);
+                  if (unlit.length > 0) s.wanderTargetId = unlit[Math.floor(Math.random() * unlit.length)].id;
+                }
+                targetL = gameState.lanterns.find(l => l.id === s.wanderTargetId)
+                  || gameState.lanterns.find(l => !l.lit)
+                  || gameState.lanterns[0];
+              }
 
               if (targetL) {
                 s.targetLanternId = targetL.id;
@@ -2629,6 +2658,19 @@
                 }
               }
             }
+
+            // Tách đàn (separation): quái không chồng lên nhau thành 1 cục "quái khổng lồ"
+            gameState.shades.forEach(o => {
+              if (o === s) return;
+              const ddx = s.pos[0] - o.pos[0];
+              const ddz = s.pos[2] - o.pos[2];
+              const dd = Math.hypot(ddx, ddz);
+              if (dd > 0.001 && dd < 2.2) {
+                const push = (2.2 - dd) * 1.6 * dt;
+                moveX += (ddx / dd) * push;
+                moveZ += (ddz / dd) * push;
+              }
+            });
 
             let nextX = s.pos[0] + moveX;
             let nextZ = s.pos[2] + moveZ;
